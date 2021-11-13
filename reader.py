@@ -1,3 +1,5 @@
+from random import choice
+
 '''
 def expandStructures(string):
 	if if "(" not in string and if ")" not in string:
@@ -38,7 +40,7 @@ class Reader():
 		return string
 
 	def findDirectiveName(self, line):
-		return line[0:line.index(" ")+1]
+		return line.split()[0]
 
 	def processListDirective(self, line):
 		line = line.replace(self.findDirectiveName(line), "")
@@ -91,7 +93,8 @@ class Reader():
 		return self.reader_dictionary
 
 	def defineWord(self, word, definition):
-		word.replace(".", "")
+		if "." in word:
+			word = word.replace(".", "")
 		for index, line in enumerate(self.textfile_list):
 			if definition in line:
 				line_list = line.split(":")
@@ -100,32 +103,39 @@ class Reader():
 				self.textfile_list[index] = line_list
 
 	def addWord(self, word):
-		syllables = 0
+		syllables = 1
 		for char in word:
 			if char == ".":
 				syllables = syllables+1
-		for index, line in enumerate(self.textfile_list):
-			line_list = [entry.strip() for entry in line.split(":")]
-			if line_list[0].isdigit():
-				if syllables == int(line_list[0]):
-					defineWord(word, line_list[1])
-			elif "-" in line_list[0]:
-				syllable_range = line_list[0].split("-")
-				if syllables in range(syllable_range[0], syllable_range[1]+1):
-					defineWord(word, line_list[1])
-			elif "?" in line_list[0]:
-				defineWord(word, line_list[1])
-			else:
-				return word
+		syllables = str(syllables)
+		if syllables in self.reader_dictionary:
+			definition = choice(self.reader_dictionary[syllables])
+			print(definition)
+			self.defineWord(word, definition)
+			self.reader_dictionary[syllables].remove(definition)
+			if not self.reader_dictionary[syllables]:
+				del self.reader_dictionary[syllables]
+			return None
+		elif "?" in self.reader_dictionary:
+			self.defineWord(word, choice(self.reader_dictionary["?"]))
+			return None
+		else:
+			for key in self.reader_dictionary.keys():
+				if "-" in key:
+					syllables = int(syllables)
+					syllable_range = key.split("-")
+					if syllables in range(syllable_range[0], syllable_range[1]):
+						defineWord(word, choice(self.reader_dictionary[key]))
+			return None
+		return word
 
-
-	def save(self):
+	def save(self, wordbank):
 		with open(self.outfile, "w+") as file:
 			for line in self.textfile_list:
 				file.write(line)
+			file.write("\n\n")
 			for line in self.wordbank:
-				file.write(f'bank: {line}')
-			file.write("\n")
+				file.write(f'bank: {line}\n')
 
 if __name__ == "__main__":
 	reader = Reader("./example.txt")
