@@ -76,13 +76,17 @@ class Reader():
 				elif ":" in line:
 					if line[0].isdigit() or line[0] == "?":
 						line = [line.strip() for line in line.split(":")]
+						if "(" in line[0] and ")" in line[0]:
+							continue
+							
 						if line[0] == "?" and self.max_syllables == False:
 							print(f'foanz: MAX_SYLLABLES not defined but wildcard is used on line {index}')
 							print(f'\t{line}')
 							quit()
 
 						if line[0] in self.reader_dictionary:
-							self.reader_dictionary[line[0]].append(line[1])
+							if line[1] not in self.reader_dictionary[line[0]]:
+								self.reader_dictionary[line[0]].append(line[1])
 						else:
 							self.reader_dictionary[line[0]] = [line[1]]
 					elif line[0:5] == "bank:":
@@ -104,30 +108,40 @@ class Reader():
 
 	def addWord(self, word):
 		syllables = 1
+		definition = ""
+		key = ""
+
 		for char in word:
 			if char == ".":
 				syllables = syllables+1
 		syllables = str(syllables)
+		
 		if syllables in self.reader_dictionary:
+			key = syllables
 			definition = choice(self.reader_dictionary[syllables])
-			print(definition)
-			self.defineWord(word, definition)
-			self.reader_dictionary[syllables].remove(definition)
-			if not self.reader_dictionary[syllables]:
-				del self.reader_dictionary[syllables]
-			return None
+			#self.defineWord(word, definition)
+			#self.reader_dictionary[syllables].remove(definition)
+			#if not self.reader_dictionary[syllables]:
+			#	del self.reader_dictionary[syllables]
+			#match = True
 		elif "?" in self.reader_dictionary:
-			self.defineWord(word, choice(self.reader_dictionary["?"]))
-			return None
+			key = "?"
+			definition = choice(self.reader_dictionary["?"])
 		else:
-			for key in self.reader_dictionary.keys():
+			for key in list(self.reader_dictionary.keys()):
 				if "-" in key:
 					syllables = int(syllables)
-					syllable_range = key.split("-")
-					if syllables in range(syllable_range[0], syllable_range[1]):
-						defineWord(word, choice(self.reader_dictionary[key]))
-			return None
-		return word
+					syllable_range = [int(value.strip()) for value in key.split("-")]
+					if syllables in list(range(syllable_range[0], syllable_range[1]+1)):
+						definition = choice(self.reader_dictionary[key])
+
+		if definition and key:
+			self.defineWord(word, definition)
+			self.reader_dictionary[key].remove(definition)
+			if not self.reader_dictionary[key]:
+				del self.reader_dictionary[key]
+		else:
+			return word
 
 	def save(self, wordbank):
 		with open(self.outfile, "w+") as file:

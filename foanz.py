@@ -18,10 +18,22 @@ global wordbank
 global current_set
 global next_set
 
+'''
+TBA: DISPLAY SETTINGS EACH GENERATION
+
+Bugs: reading from a file already populated incorrectly adds already filled fields out to reader_dictionary
+		Used wordbank entries are not deleted from the file
+		New word bank entries leave two-line gap
+'''
+
 def help():
 	print("Commands:")
 	print("\t(h)elp")
 	print("\t\tShows this whole spiel")
+	print()
+	print("\t(r)ead [FILEPATH]")
+	print("\t\tload the file at the absolute or relative directory FILEPATH as new dictionary/directives file")
+	print("\t\twithout any filepath it reloads the dictionary file given")
 	print()
 	print("\t(n)ew [x]")
 	print("\t\tby default, will provide 10 randomly generated words with a shuffled phoneme distribution")
@@ -82,7 +94,7 @@ def processCommand(command):
 			indexes.append(int(command))
 			continue
 
-		elif command.startswith("new") or command.startswith("n"):
+		elif command.startswith("n"):
 			if command == "new" or command == "n":
 				new = 10
 			else:
@@ -93,7 +105,7 @@ def processCommand(command):
 					print("foanz: unexpected argument")
 			continue
 
-		elif command.startswith("more") or command.startswith("m"):
+		elif command.startswith("m"):
 			if command == "more" or command == "m":
 				more = 10
 			else:
@@ -104,8 +116,8 @@ def processCommand(command):
 					print("foanz: unexpected argument")
 			continue
 
-		elif command.startswith("shuffle") or command.startswith("sh"):
-			if command == "shuffle":
+		elif command.startswith("sh"):
+			if command == "shuffle" or command == "sh":
 				shuffle_vowels = True
 				shuffle_consonants = True
 			elif "vowels" in command:
@@ -116,7 +128,7 @@ def processCommand(command):
 				print("foanz: unexpected argument")
 			continue
 
-		elif command.startswith("apply") or command.startswith("a"):
+		elif command.startswith("a"):
 			apply_words = True
 			command_list = command.split()
 			if len(command_list) > 1:
@@ -127,8 +139,8 @@ def processCommand(command):
 			exit = True
 			continue
 
-		elif command.startswith("syllables") or command.startswith("s"):
-			if command == "syllables":
+		elif command.startswith("s"):
+			if command == "syllables" or command == "s":
 				syllables = "Reset"
 			else:
 				command_list = command.split()
@@ -144,9 +156,20 @@ def processCommand(command):
 					print("foanz: non-number supplied where number was expected")
 			continue
 
-		elif "help" in command:
+		elif command.startswith("h"):
 			help()
 			continue
+
+		elif command.startswith("r"):
+			command_list = command.split()
+			old_file = reader.textfile
+			if len(command_list) > 1:
+				reader.textfile = command_list[1]
+			try:
+				reader.readDictionaryFile()
+			except:
+				print("foanz: bad filepath")
+				reader.textfile = old_file
 
 	return {"new": new, "more": more, "shuffle_consonants": shuffle_consonants, "shuffle_vowels": shuffle_vowels,
 			"apply_words": apply_words, "exit": exit, "indexes": indexes, "new_words": new_words, "syllables": syllables}
@@ -160,7 +183,6 @@ def exitFoanz():
 reader = Reader("./example.txt")
 consonants, vowels, structures, disallowed, max_syllables = reader.returnDirectives()
 phones = Phones(consonants, vowels, structures, disallowed, max_syllables)
-dictionary = reader.readDictionaryFile()
 wordbank = reader.wordbank
 current_set = []
 next_set = []
@@ -168,7 +190,6 @@ next_set = []
 def main():
 	global reader
 	global phones
-	global dictionary
 	global wordbank
 	global current_set
 	global next_set
@@ -211,13 +232,13 @@ def main():
 			reprint = True
 
 		if command_dict["apply_words"]:
+			print(f'Before:\n{wordbank}\n{reader.reader_dictionary}')
 			for word in wordbank:
 				return_val = reader.addWord(word)
 				if return_val == None:
 					wordbank.remove(word)
 			reader.save(wordbank)
-			print(reader.reader_dictionary)
-			print(reader.textfile_list)
+			print(f'After:\n{wordbank}\n{reader.reader_dictionary}')
 
 		if command_dict["exit"]:
 			exit = True
