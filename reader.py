@@ -42,7 +42,8 @@ class Reader():
 
 	def processListDirective(self, line):
 		line = line.replace(self.findDirectiveName(line), "")
-		return [(self.removeComments(n).strip()) for n in line.split(",")]
+		#return [(self.removeComments(n).strip()) for n in line.split(",")]
+		return [(n.strip()) for n in line.split(",")]
 
 	def readDictionaryFile(self):
 		with open(self.textfile, "r") as file:
@@ -50,7 +51,8 @@ class Reader():
 			for index, line in enumerate([line.strip() for line in self.textfile_list if line.strip() != ""], start=1):
 				if line[0:2] == "//":
 					continue
-				elif line[0] == "#":
+				line = self.removeComments(line)
+				if line[0] == "#":
 					try:
 						if "CONSONANTS" in line:
 							self.consonants = self.processListDirective(line)
