@@ -1,27 +1,116 @@
 from numpy.random import default_rng
-from numpy.random import choice
+from random import choice, randrange
 
-rng = default_rng()
+class Phones():
+	def __init__(self, consonants, vowels, structures, disallowed, max_syllables):
+		self.consonants = consonants
+		self.vowels = vowels
+		self.structures = structures
+		self.disallowed = disallowed
+		self.min_syllables = 1
+		self.max_syllables = max_syllables
+		self.syllable_selection = False
+		
+		self.rng = default_rng()
+		self.zipf_consonants = self.getZipfDistribution(len(consonants))
+		self.zipf_vowels = self.getZipfDistribution(len(vowels))
 
-# Phonemic Inventory
-consonants = ["p", "t", "k", "n", "r", "s", "x", "y", "w", "f", ""]
-vowels = ["a", "e", "i", "u"]
-# These I don't want shuffled
-medials = ["", "y", "w"]
-codas = ["", "n"]
+	def shuffleConsonants(self):
+		self.rng.shuffle(self.consonants)
 
-# Rules
-accept_medials = ["p", "t", "k", "n", "r"]
-# Valid lengths of syllables
-valid_lengths = [1, 2]
+	def shuffleVowels(self):
+		self.rng.shuffle(self.vowels)
+
+	def getHarmonic(self, N):
+		harmonic = 0
+		for n in range(1, N+1):
+			harmonic += (1/n)
+		return harmonic
+
+	def getZipfFrequency(self, k, N):
+		frequency = (1/k)
+		frequency = frequency/self.getHarmonic(N)
+		return frequency
+
+	def getZipfDistribution(self, N):
+		distribution = []
+		for k in range(1, N+1):
+			distribution.append(self.getZipfFrequency(k, N))
+		return distribution
+
+	def makeSyllable(self, structure):
+		syllable = ""
+		for character in structure:
+			valid = False
+			while not valid:
+				if character == "C":
+					newChar = self.rng.choice(self.consonants, p=self.zipf_consonants, shuffle=False)
+				elif character == "V":
+					newChar = self.rng.choice(self.vowels, p=self.zipf_vowels, shuffle=False)
+				else:
+					newChar = character
+
+				valid = self.checkValid(syllable + newChar)
+				if valid:
+					syllable += newChar
+
+		return syllable
+
+	def makeWord(self, length): #Structures may be a list or a single structure
+		word = ""
+		for x in range(0, length):
+			if word != "":
+				word += '.'
+			valid = False
+			while not valid:
+				newSyllable = self.makeSyllable(self.getRandomStructure())
+				
+				valid = self.checkValid(word + newSyllable)
+				if valid:
+					word += newSyllable
+
+		return word
+
+	def getRandomStructure(self):
+		# Picks a random element if structures is list, or returns it if it's str
+		if isinstance(self.structures, list):
+			return choice(self.structures)
+		else:
+			return self.structures
+
+	def getRandomLength(self):
+		if self.syllable_selection == False:
+			return randrange(self.min_syllables, self.max_syllables)
+		else:
+			return choice(self.syllable_selection)
+
+	def checkValid(self, string):
+		for combo in self.disallowed:
+			if combo in string:
+				return False
+		return True
+
+	def generateWordPool(self, word_count):
+		pool = []
+
+		while len(pool) < word_count:
+			word = self.makeWord(self.getRandomLength())
+			if word not in pool:
+				pool.append(word)
+
+		return pool
+
+if __name__ == "__main__":
+	phones = Phones(["p", "t", "k"], ["i", "a", "o"], ["CVC"], [], 5)
+	print(phones.makeWord(2))
 
 # Shuffle list for interesting words
-rng.shuffle(consonants)
-rng.shuffle(vowels)
+#rng.shuffle(consonants)
+#rng.shuffle(vowels)
 
 # Print them in case we like it
-print(f'Consonants List: {consonants}')
-print(f'Vowels List: {vowels}')
+#print(f'Consonants List: {consonants}')
+#print(f'Vowels List: {vowels}')
 
 '''
 Zipfs Law:
@@ -33,42 +122,13 @@ Where N is the number of items
 k and n can be raised to the power of s (any positive int) to change the distribution
 '''
 
-def getHarmonic(N):
-	harmonic = 0
-	for n in range(1, N+1):
-		harmonic += (1/n)
-	return harmonic
-
-def getZipfFrequency(k, N):
-	frequency = (1/k)
-	frequency = frequency/getHarmonic(N)
-	return frequency
-
-def getZipfDistribution(N):
-	distribution = []
-	for k in range(1, N+1):
-		distribution.append(getZipfFrequency(k, N))
-	return distribution
-
 # Get Zipf distribution for all elements
-zipf_consonants = getZipfDistribution(len(consonants))
-zipf_vowels = getZipfDistribution(len(vowels))
-zipf_medials = getZipfDistribution(len(medials))
-zipf_codas = getZipfDistribution(len(codas))
-zipf_length = getZipfDistribution(len(valid_lengths))
+#zipf_consonants = getZipfDistribution(len(consonants))
+#zipf_vowels = getZipfDistribution(len(vowels))
+#zipf_medials = getZipfDistribution(len(medials))
+#zipf_codas = getZipfDistribution(len(codas))
+#zipf_length = getZipfDistribution(len(valid_lengths))
 
-'''
-for consonant in consonants:
-	for vowel in vowels:
-		if consonant in ["p", "t", "k"]:
-			for phone in clusterable:
-				print(f'{consonant}{phone}{vowel}')
-				print(f'{consonant}{phone}{vowel}n')
-		elif consonant in ["n", "r"]:
-			print(f'{consonant}y{vowel}')
-			print(f'{consonant}y{vowel}n')
-		print(f'{consonant}{vowel}')
-		print(f'{consonant}{vowel}n')
 '''
 def getConsonant():
 	return rng.choice(consonants, p=zipf_consonants, shuffle=False)
@@ -81,43 +141,6 @@ def getMedial():
 
 def getCoda():
 	return rng.choice(codas, p=zipf_codas, shuffle=False)
+'''
 
-def makeSyllable():
-	onset = getConsonant()
-	if onset in accept_medials:
-		medial = getMedial()
 
-		# Coding for an exception
-		if medial == "w" and onset in ["n", "r"]:
-			medial = ""
-
-		onset = onset + medial
-
-	nucleus = getVowel()
-
-	coda = getCoda()
-
-	return onset + nucleus + coda
-
-def makeWord(length):
-	word = ""
-	for x in range(0, length):
-		word += makeSyllable()
-	return word
-
-def getRandomLength():
-	return rng.choice(valid_lengths, p=zipf_length, shuffle=False)	
-
-def generateWordPool(word_count):
-	pool = []
-
-	while len(pool) < word_count:
-		word = makeWord(getRandomLength())
-		if word not in pool:
-			pool.append(word)
-
-	return pool
-
-words = generateWordPool(50)
-for position, word in enumerate(words, start=1):
-	print(f'{position}. {word}')

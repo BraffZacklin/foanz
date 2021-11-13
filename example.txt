@@ -1,0 +1,24 @@
+// This is a comment
+// These are directives
+#CONSONANTS 	p, t, k, m, n, ng, r, l, s, x, y, w, f
+#VOWELS 		a,e,i,o,u								// Spaces are not necessary; the comma is
+#STRUCTURES		CVC, CV, VC, C 							//TBA: Allowing optionals like (C)V(C); also allowing defined letters like (C)V(n)
+//#DISALLOWED 	rl, lr									// Note: Structures can be "CVCn" and n will simply be placed in the resulting syllable... C and V are reserved for obvious reasons
+#MAX_SYLLABLES 	5
+//#DUPLICATES 	(allow/deny/warn) 						//TBA
+// Bug: commas in comments for directives that use them to separate items will add everything after the comma to the directive's list
+
+// These are entries
+1: This word will be one syllable
+1: This word will also be one syllable
+2: This word will be two syllables
+1-3: This is a range of syllables, note that -1 or 1- will not work
+?: This will be a random number of syllables, but requires that MAX_SYLLABLES be defined
+supercalifragilisticexpialidocious (14): This is an entry after it has been supplied a word
+maisonderriere (3-6): This is a range supplied with a word
+
+// TBA
+//CCVCC: This word has been given a defined structure
+//CVVC, 2: This word has been supplied a syllable structure and syllable count
+//C-: This word starts with a consonant
+//1, -V: This word ends with a vowel and has one syllable
