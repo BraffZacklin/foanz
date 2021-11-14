@@ -1,32 +1,8 @@
 from reader import Reader
 from phones import Phones
+from sys import argv
 
-'''
-	for key in list(dictionary.keys()):
-		if "-" in key:
-			syllable_range = key.split("-")
-			phones.getRandomLength(start=)
-'''
-
-#phones.makeWord()
-#phones.getRandomLength()
-
-global reader
-global phones
-global dictionary
-global wordbank
-global current_set
-global next_set
-
-'''
-TBA: DISPLAY SETTINGS EACH GENERATION
-
-Bugs: reading from a file already populated incorrectly adds already filled fields out to reader_dictionary
-		Used wordbank entries are not deleted from the file
-		New word bank entries leave two-line gap
-'''
-
-def help():
+def printHelp():
 	print("Commands:")
 	print("\t(h)elp")
 	print("\t\tShows this whole spiel")
@@ -64,6 +40,10 @@ def help():
 	print("Alternatively, new words can be added by typing your own in, but syllable boundaries")
 	print("Will need to be indicated with full stops and single quotes (') used")
 	print("TIP: Multiple commands can be issued with a comma-separated list and they will be processed one-by-one")
+	print()
+	print("PROTIP: You can launch foanz with:")
+	print("\tfoanz.py [input_textfile] [output.textfile]")
+	print("\t(with only one filepath it is assumed to be input)")
 	print()
 
 def getInput(message):
@@ -157,7 +137,7 @@ def processCommand(command):
 			continue
 
 		elif command.startswith("h"):
-			help()
+			printHelp()
 			continue
 
 		elif command.startswith("r"):
@@ -167,7 +147,8 @@ def processCommand(command):
 				reader.textfile = command_list[1]
 			try:
 				reader.readDictionaryFile()
-			except:
+			except Exception as e:
+				print(e)
 				print("foanz: bad filepath")
 				reader.textfile = old_file
 
@@ -180,12 +161,11 @@ def exitFoanz():
 	reader.save(wordbank)
 	quit()
 
-reader = Reader("./example.txt")
-consonants, vowels, structures, disallowed, max_syllables = reader.returnDirectives()
-phones = Phones(consonants, vowels, structures, disallowed, max_syllables)
-wordbank = reader.wordbank
-current_set = []
-next_set = []
+def printSettings():
+	global reader
+	global phones
+	syllables = phones.syllable_selection if phones.syllable_selection else list(range(phones.min_syllables, phones.max_syllables)) 
+	print(f'input_file: {reader.textfile}\noutput_file: {reader.outfile}\nvowels: {phones.vowels}\nconsonants: {phones.consonants}\nsyllables: {syllables}')
 
 def main():
 	global reader
@@ -204,6 +184,8 @@ def main():
 		if exit == True:
 			exitFoanz()
 		
+		printSettings()
+
 		if next_set:
 			current_set = next_set
 			next_set = []
@@ -232,13 +214,11 @@ def main():
 			reprint = True
 
 		if command_dict["apply_words"]:
-			print(f'Before:\n{wordbank}\n{reader.reader_dictionary}')
 			for word in wordbank:
 				return_val = reader.addWord(word)
 				if return_val == None:
 					wordbank.remove(word)
 			reader.save(wordbank)
-			print(f'After:\n{wordbank}\n{reader.reader_dictionary}')
 
 		if command_dict["exit"]:
 			exit = True
@@ -270,4 +250,33 @@ def main():
 				print("foanz: unexpected input for syllables")
 
 if __name__ == "__main__":
+	global reader
+	global consonants
+	global phones
+	global wordbank
+	global current_set
+	global next_set
+
+	infile = "./example.txt"
+	outfile = "./outfile.txt"
+
+	argc = len(argv)
+	if argc > 1:
+		if argc >= 2:
+			infile = argv[1]
+		if argc == 3:
+			infile = argv[2]
+		else:
+			print("foanz: too many arguments")
+			printHelp()
+			quit()
+
+	reader = Reader("./example.txt")
+	
+	consonants, vowels, structures, disallowed, max_syllables = reader.returnDirectives()
+	phones = Phones(consonants, vowels, structures, disallowed, max_syllables)
+	wordbank = reader.wordbank
+	current_set = []
+	next_set = []
+	
 	main()

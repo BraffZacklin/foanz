@@ -48,53 +48,71 @@ class Reader():
 		return [(n.strip()) for n in line.split(",")]
 
 	def readDictionaryFile(self):
-		with open(self.textfile, "r") as file:
-			self.textfile_list = file.readlines()
-			for index, line in enumerate([line.strip() for line in self.textfile_list if line.strip() != ""], start=1):
-				if line[0:2] == "//":
-					continue
-				line = self.removeComments(line)
-				if line[0] == "#":
-					try:
-						if "CONSONANTS" in line:
-							self.consonants = self.processListDirective(line)
-						elif "VOWELS" in line:
-							self.vowels = self.processListDirective(line)
-						elif "STRUCTURES" in line:
-							self.structures = self.processListDirective(line)
-						elif "DISALLOWED" in line:
-							self.disallowed = self.processListDirective(line)
-						elif "MAX_SYLLABLES" in line:
-							self.max_syllables = line.replace(self.findDirectiveName(line), "")
-							self.max_syllables.strip()
-							self.max_syllables = int(self.max_syllables)
-					except ValueError as e:
-						print(e)
-						print(f'foanz: mangled directive on line {index}')
-						print(f'\t"{line}"')
-						quit()
-				elif ":" in line:
-					if line[0].isdigit() or line[0] == "?":
-						line = [line.strip() for line in line.split(":")]
-						if "(" in line[0] and ")" in line[0]:
-							continue
-							
-						if line[0] == "?" and self.max_syllables == False:
-							print(f'foanz: MAX_SYLLABLES not defined but wildcard is used on line {index}')
-							print(f'\t{line}')
+		try:
+			with open(self.textfile, "r") as file:
+				self.textfile_list = file.readlines()
+				for index, line in enumerate([line.strip() for line in self.textfile_list if line.strip() != ""], start=1):
+					if line[0:2] == "//":
+						continue
+					line = self.removeComments(line)
+					if line[0] == "#":
+						try:
+							if "CONSONANTS" in line:
+								self.consonants = self.processListDirective(line)
+							elif "VOWELS" in line:
+								self.vowels = self.processListDirective(line)
+							elif "STRUCTURES" in line:
+								self.structures = self.processListDirective(line)
+							elif "DISALLOWED" in line:
+								self.disallowed = self.processListDirective(line)
+							elif "MAX_SYLLABLES" in line:
+								self.max_syllables = line.replace(self.findDirectiveName(line), "")
+								self.max_syllables.strip()
+								self.max_syllables = int(self.max_syllables)
+						except ValueError as e:
+							print(e)
+							print(f'foanz: mangled directive on line {index}')
+							print(f'\t"{line}"')
 							quit()
+					elif ":" in line:
+						if line[0].isdigit() or line[0] == "?":
+							line = [line.strip() for line in line.split(":")]
+							if "(" in line[0] and ")" in line[0]:
+								continue
 
-						if line[0] in self.reader_dictionary:
-							if line[1] not in self.reader_dictionary[line[0]]:
-								self.reader_dictionary[line[0]].append(line[1])
-						else:
-							self.reader_dictionary[line[0]] = [line[1]]
-					elif line[0:5] == "bank:":
-						line = line.replace("bank:", "")
-						line = line.strip()
-						self.wordbank.append(line)
+							if line[0] == "?" and self.max_syllables == False:
+								print(f'foanz: MAX_SYLLABLES not defined but wildcard is used on line {index}')
+								print(f'\t{line}')
+								quit()
 
-		return self.reader_dictionary
+							if line[0] in self.reader_dictionary:
+								if line[1] not in self.reader_dictionary[line[0]]:
+									self.reader_dictionary[line[0]].append(line[1])
+							else:
+								self.reader_dictionary[line[0]] = [line[1]]
+
+						elif line[0:5] == "bank:":
+							line = line.replace("bank:", "")
+							line = line.strip()
+							if line not in self.wordbank:
+								self.wordbank.append(line)
+			
+			self.removeBankedFromTextfileList()
+							
+			return self.reader_dictionary
+		except FileNotFoundError as e:
+			print(e)
+			print("foanz: default or user input file not found,")
+			print("\tone will need to be manually loaded with 'reload [file]'")
+			return False
+
+	def removeBankedFromTextfileList(self):
+		bank_lines = []
+		for line in self.textfile_list:
+			if "bank: " in line:
+				bank_lines.append(line)
+		for line in bank_lines:
+			self.textfile_list.remove(line)
 
 	def defineWord(self, word, definition):
 		if "." in word:
@@ -147,7 +165,10 @@ class Reader():
 		with open(self.outfile, "w+") as file:
 			for line in self.textfile_list:
 				file.write(line)
-			file.write("\n\n")
+
+			if self.textfile_list[-1].strip() != "":
+				file.write("\n\n")
+
 			for line in self.wordbank:
 				file.write(f'bank: {line}\n')
 
