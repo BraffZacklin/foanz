@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from reader import Reader
 from phones import Phones
 from sys import argv
@@ -164,7 +166,7 @@ def exitFoanz():
 def printSettings():
 	global reader
 	global phones
-	syllables = phones.syllable_selection if phones.syllable_selection else list(range(phones.min_syllables, phones.max_syllables)) 
+	syllables = phones.syllable_selection if phones.syllable_selection else list(range(phones.min_syllables, phones.max_syllables+1)) 
 	print(f'input_file: {reader.textfile}\noutput_file: {reader.outfile}\nvowels: {phones.vowels}\nconsonants: {phones.consonants}\nsyllables: {syllables}')
 
 def main():
