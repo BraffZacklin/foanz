@@ -264,16 +264,17 @@ if __name__ == "__main__":
 
 	argc = len(argv)
 	if argc > 1:
-		if argc >= 2:
+		if argc == 2:
 			infile = argv[1]
-		if argc == 3:
-			infile = argv[2]
+		elif argc == 3:
+			infile = argv[1]
+			outfile = argv[2]
 		else:
 			print("foanz: too many arguments")
 			printHelp()
 			quit()
 
-	reader = Reader("./example.txt")
+	reader = Reader(infile, outfile=outfile)
 	
 	consonants, vowels, structures, disallowed, max_syllables = reader.returnDirectives()
 	phones = Phones(consonants, vowels, structures, disallowed, max_syllables)

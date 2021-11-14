@@ -77,7 +77,7 @@ class Reader():
 					elif ":" in line:
 						if line[0].isdigit() or line[0] == "?":
 							line = [line.strip() for line in line.split(":")]
-							if "(" in line[0] and ")" in line[0]:
+							if "(" in line and ")" in line:
 								continue
 
 							if line[0] == "?" and self.max_syllables == False:
