@@ -6,7 +6,7 @@ class Phones():
 		self.consonants = consonants
 		self.vowels = vowels
 		self.structures = structures
-		self.disallowed = disallowed
+		self.disallowed = self.parseDisallowed(disallowed)
 		self.min_syllables = 1
 		self.max_syllables = max_syllables
 		self.syllable_selection = False
@@ -14,6 +14,22 @@ class Phones():
 		self.rng = default_rng()
 		self.zipf_consonants = self.getZipfDistribution(len(consonants))
 		self.zipf_vowels = self.getZipfDistribution(len(vowels))
+
+	def parseDisallowed(self, disallowed):
+		rule_dict = {"start": [], "middle": [], "end": [], "all": []}
+
+		for rule in disallowed:
+			if rule[0] == "?" and rule[-1] == "?":
+				location = "middle"
+			elif rule[0] == "?":
+				location = "end"
+			elif rule[-1] == "?":
+				location = "start"
+			else:
+				location = "all"
+			rule_dict[location].append(rule.replace("?", ""))
+
+		return rule_dict
 
 	def shuffleConsonants(self):
 		self.rng.shuffle(self.consonants)
@@ -41,31 +57,29 @@ class Phones():
 	def makeSyllable(self, structure):
 		syllable = ""
 		for character in structure:
-			valid = False
-			while not valid:
-				if character == "C":
-					newChar = self.rng.choice(self.consonants, p=self.zipf_consonants, shuffle=False)
-				elif character == "V":
-					newChar = self.rng.choice(self.vowels, p=self.zipf_vowels, shuffle=False)
-				else:
-					newChar = character
-
-				valid = self.checkValid(syllable + newChar)
-				if valid:
-					syllable += newChar
+			if character == "C":
+				newChar = self.rng.choice(self.consonants, p=self.zipf_consonants, shuffle=False)
+			elif character == "V":
+				newChar = self.rng.choice(self.vowels, p=self.zipf_vowels, shuffle=False)
+			else:
+				newChar = character
 
 		return syllable
 
 	def makeWord(self, length): #Structures may be a list or a single structure
 		word = ""
-		for x in range(0, length):
+		for x in range(0, length+1):
 			if word != "":
 				word += '.'
 			valid = False
 			while not valid:
 				newSyllable = self.makeSyllable(self.getRandomStructure())
 				
-				valid = self.checkValid(word + newSyllable)
+				end = False
+				if x == length:
+					end = True
+
+				valid = self.checkValid(word + newSyllable, end=end)
 				if valid:
 					word += newSyllable
 
@@ -84,10 +98,26 @@ class Phones():
 		else:
 			return choice(self.syllable_selection)
 
-	def checkValid(self, string):
-		for combo in self.disallowed:
-			if combo in string:
+	def checkValid(self, string, end=False):
+		for rule in self.disallowed["all"]:
+			if rule in string:
 				return False
+		for rule in self.disallowed["start"]:
+			rule_length = len(rule)
+			if string[0:rule_length] == rule:
+				return False
+		for rule in self.disallowed["middle"]:
+			index = string.find(rule)
+			if index != -1:
+				if index != 0:
+					if end and index != len(string) - len(rule):
+						return False
+		if end:
+			for rule in self.disallowed["end"]:
+				index = string.find(rule)
+				if index != -1:
+					if index == len(string) - len(rule):
+						return False	
 		return True
 
 	def generateWordPool(self, word_count):
@@ -101,5 +131,8 @@ class Phones():
 		return pool
 
 if __name__ == "__main__":
-	phones = Phones(["p", "t", "k"], ["i", "a", "o"], ["CVC"], [], 5)
-	print(phones.makeWord(2))
+	phones = Phones(["p", "t", "k"], ["i", "a", "o"], ["CVC"], ["?ng?", "?ng"], 5)
+	#print(phones.makeWord(2))
+	print(phones.checkValid("strong", end=True)) # should be not valid
+	print(phones.checkValid("strngo", end=True)) # should be not valid
+	print(phones.checkValid("ng"))				 # should be valid

@@ -3,7 +3,7 @@
 #CONSONANTS 	p, t, k, m, ng, r, l, s, x, y, w, f
 #VOWELS 		a,e,i,o,u								// Spaces are not necessary, the comma is
 #STRUCTURE		(C)V(C/n)							
-#DISALLOWED		rl, ml
+#DISALLOWED		rl?, ?ml, ?ng?, sr						// Bans "sr" in any position; "ng" in the middle of a word, "ml" at the end of a word, "rl" and the beginning of a word
 #MAX_SYLLABLES 	5
 //#DUPLICATES 	(allow/deny/warn) 						//TBA
 
