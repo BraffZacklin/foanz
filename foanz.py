@@ -167,7 +167,7 @@ def exitFoanz():
 def printSettings():
 	global reader
 	global phones
-	syllables = phones.syllable_selection if phones.syllable_selection else list(range(phones.min_syllables, phones.max_syllables+1)) 
+	syllables = phones.syllable_selection if phones.syllable_selection else list(range(phones.min_syllables, phones.max_syllables)) 
 	print(f'input_file: {reader.textfile}\noutput_file: {reader.outfile}\nvowels: {phones.vowels}\nconsonants: {phones.consonants}\nsyllables: {syllables}')
 
 def main():
@@ -277,8 +277,8 @@ if __name__ == "__main__":
 
 	reader = Reader(infile, outfile=outfile)
 	
-	consonants, vowels, structures, disallowed, max_syllables = reader.returnDirectives()
-	phones = Phones(consonants, vowels, structures, disallowed, max_syllables)
+	consonants, vowels, structures, disallowed, max_syllables, required = reader.returnDirectives()
+	phones = Phones(consonants, vowels, structures, disallowed, max_syllables, required)
 	wordbank = reader.wordbank
 	current_set = []
 	next_set = []

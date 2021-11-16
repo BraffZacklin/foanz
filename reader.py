@@ -27,13 +27,14 @@ class Reader():
 		self.vowels = []
 		self.structures = []
 		self.disallowed = []
+		self.required = []
 		self.reader_dictionary = {}
 		self.max_syllables = False
 		self.wordbank = []
 		self.readDictionaryFile()
 
 	def returnDirectives(self):
-		return self.consonants, self.vowels, self.structures, self.disallowed, self.max_syllables
+		return self.consonants, self.vowels, self.structures, self.disallowed, self.max_syllables, self.required
 
 	def removeComments(self, string):
 		if "//" in string:
@@ -70,7 +71,9 @@ class Reader():
 							elif "MAX_SYLLABLES" in line:
 								self.max_syllables = line.replace(self.findDirectiveName(line), "")
 								self.max_syllables.strip()
-								self.max_syllables = int(self.max_syllables)
+								self.max_syllables = int(self.max_syllables)+1
+							elif "REQUIRED" in line:
+								self.required = self.processListDirective(line)
 						except ValueError as e:
 							print(e)
 							print(f'foanz: mangled directive on line {index}')

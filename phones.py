@@ -2,7 +2,7 @@ from numpy.random import default_rng
 from random import choice, randrange
 
 class Phones():
-	def __init__(self, consonants, vowels, structures, disallowed, max_syllables):
+	def __init__(self, consonants, vowels, structures, disallowed, max_syllables, required):
 		self.consonants = consonants
 		self.vowels = vowels
 		self.structures = list(structures)
@@ -55,7 +55,7 @@ class Phones():
 			distribution.append(self.getZipfFrequency(k, N))
 		return distribution
 
-	def makeSyllable(self, structure):
+	def makeSyllable(self, structure, start=False, end=False):
 		syllable = ""
 		for character in structure:
 			if character == "C":
@@ -70,19 +70,23 @@ class Phones():
 
 	def makeWord(self, length): #Structures may be a list or a single structure
 		word = ""
-		for x in range(0, length+1):
+		for x in range(0, length):
 			if word != "":
 				word += '.'
+
+			start = False
+			end = False
+
+			if x == length-1:
+				end = True
+			if x == 0:
+				start = True
+
 			valid = False
 			newSyllable = ""
 			while not valid:
-				newSyllable = self.makeSyllable(self.getRandomStructure())
-
-				end = False
-				if x == length:
-					end = True
+				newSyllable = self.makeSyllable(self.getRandomStructure(), end=end, start=start)
 				valid = self.checkValid(word + newSyllable, end=end)
-
 			word += newSyllable
 
 		return word
