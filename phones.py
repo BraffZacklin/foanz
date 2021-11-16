@@ -63,6 +63,7 @@ class Phones():
 				newChar = self.rng.choice(self.vowels, p=self.zipf_vowels, shuffle=False)
 			else:
 				newChar = character
+			syllable += newChar
 
 		return syllable
 
@@ -72,16 +73,16 @@ class Phones():
 			if word != "":
 				word += '.'
 			valid = False
+			newSyllable = ""
 			while not valid:
 				newSyllable = self.makeSyllable(self.getRandomStructure())
-				
+
 				end = False
 				if x == length:
 					end = True
 
 				valid = self.checkValid(word + newSyllable, end=end)
-				if valid:
-					word += newSyllable
+			word += newSyllable
 
 		return word
 
@@ -136,3 +137,4 @@ if __name__ == "__main__":
 	print(phones.checkValid("strong", end=True)) # should be not valid
 	print(phones.checkValid("strngo", end=True)) # should be not valid
 	print(phones.checkValid("ng"))				 # should be valid
+	print(phones.makeWord(2))
