@@ -1,22 +1,4 @@
 from random import choice
-from structures import Structures
-
-'''
-def expandStructures(string):
-	if if "(" not in string and if ")" not in string:
-		return string
-
-	expanded_structures = []
-	more_structures = True
-	while more_structures:
-		if "(" in string and if ")" in string:
-
-		elif "(" in string or if ")" in string:
-			raise ValueError, "missing opening or closing bracket in structures directive"
-		else:
-			more_structures = False
-	return expanded_structures
-'''
 
 class Reader():
 	def __init__(self, textfile, outfile="./outfile.txt"):
@@ -65,7 +47,7 @@ class Reader():
 							elif "VOWELS" in line:
 								self.vowels = self.processListDirective(line)
 							elif "STRUCTURE" in line:
-								self.structures = Structures().expandStructure(line.replace(self.findDirectiveName(line), ""))
+								self.structures = self.expandStructure(line.replace(self.findDirectiveName(line), ""))
 							elif "DISALLOWED" in line:
 								self.disallowed = self.processListDirective(line)
 							elif "MAX_SYLLABLES" in line:
@@ -191,6 +173,53 @@ class Reader():
 
 			for line in self.wordbank:
 				file.write(f'bank: {line}\n')
+
+	def expandStructure(self, structure):
+		valid_structures = [""]
+		structure_list = self.structureToList(structure)
+
+		for group in structure_list:
+			optional = False
+			if "(" in group and ")" in group:
+				optional = True
+				group = group.replace("(", "")
+				group = group.replace(")", "")
+			elif "(" in group or ")" in group:
+				assert ValueError, "foanz: malfomred structures directive entry {structure}"
+
+			if "/" in group:
+				options_list = group.split("/")
+				new_structures = []
+				for option in options_list:
+					new_structures += [entry+option for entry in valid_structures] + valid_structures
+				valid_structures = new_structures
+			else:
+				if optional:
+					new_structures = [entry+group for entry in valid_structures] + valid_structures
+				else:
+					new_structures = [entry+group for entry in valid_structures]
+				valid_structures = new_structures
+		
+		valid_structures = set(valid_structures)
+		return valid_structures 
+
+	def structureToList(self, structure):
+		structure_list = []
+
+		group_hit = False
+		group_start = 0
+		for index, char in enumerate(structure):
+			if char == "(":
+				group_hit = True
+				group_start = index
+			elif char == ")":
+				group_hit = False
+				structure_list.append(structure[group_start:index+1])
+			elif char.isspace():
+				continue
+			elif group_hit == False:
+				structure_list.append(char)
+		return structure_list
 
 if __name__ == "__main__":
 	reader = Reader("./example.txt")
