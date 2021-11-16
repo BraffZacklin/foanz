@@ -56,6 +56,12 @@ class Reader():
 								self.max_syllables = int(self.max_syllables)+1
 							elif "REQUIRED" in line:
 								self.required = self.processListDirective(line)
+							elif "DUPLICATES" in line:
+								self.duplicates = lower(line.replace(self.findDirectiveName(line), "").strip())
+								if self.duplicates not in ["allow", "deny", "warn"]:
+									raise ValueError
+							else:
+								raise ValueError
 						except ValueError as e:
 							print(e)
 							print(f'foanz: mangled directive on line {index}')
@@ -127,7 +133,24 @@ class Reader():
 
 		return syllables
 
+	def checkDuplicates(self, word):
+		if self.duplicates:
+			if self.duplicates == "allow":
+				return word
+			else:
+				for line in self.textfile_list:
+					line_list = [segment.strip() for segment in line.split(":")]
+					if line_list[0] == word:
+						if self.duplicates == "warn":
+							print(f'foanz: duplicate word {word}')
+						else:
+							return False
+
 	def addWord(self, word):
+		check = self.checkDuplicates(word)
+		if check == False:
+			return word
+
 		syllables = 1
 		definition = ""
 		key = ""
@@ -185,7 +208,7 @@ class Reader():
 				group = group.replace("(", "")
 				group = group.replace(")", "")
 			elif "(" in group or ")" in group:
-				assert ValueError, "foanz: malfomred structures directive entry {structure}"
+				raise Exception(f"foanz: malformed structures directive entry {structure}")
 
 			if "/" in group:
 				options_list = group.split("/")
