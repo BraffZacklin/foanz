@@ -1,9 +1,9 @@
 // This is a comment
 // These are directives
-#CONSONANTS 	p, t, k, m, n, ng, r, l, s, x, y, w, f
+#CONSONANTS 	p, t, k, m, ng, r, l, s, x, y, w, f
 #VOWELS 		a,e,i,o,u								// Spaces are not necessary, the comma is
-#STRUCTURES		CVC, CV, VC, C 							//TBA: Allowing optionals like (C)V(C); also allowing defined letters like (C)V(n)
-#DISALLOWED 	rl, lr									// Note: Structures can be "CVCn" and n will simply be placed in the resulting syllable... C and V are reserved for obvious reasons
+#STRUCTURE		(C)V(C/n)							
+#DISALLOWED		rl, ml
 #MAX_SYLLABLES 	5
 //#DUPLICATES 	(allow/deny/warn) 						//TBA
 

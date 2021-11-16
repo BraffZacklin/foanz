@@ -281,5 +281,5 @@ if __name__ == "__main__":
 	wordbank = reader.wordbank
 	current_set = []
 	next_set = []
-	
+
 	main()

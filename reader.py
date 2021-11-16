@@ -1,4 +1,5 @@
 from random import choice
+from structures import Structures
 
 '''
 def expandStructures(string):
@@ -62,10 +63,10 @@ class Reader():
 								self.consonants = self.processListDirective(line)
 							elif "VOWELS" in line:
 								self.vowels = self.processListDirective(line)
-							elif "STRUCTURES" in line:
-								self.structures = self.processListDirective(line)
-							elif "DISALLOWED" in line:
-								self.disallowed = self.processListDirective(line)
+							elif "STRUCTURE" in line:
+								self.structures = Structures().expandStructure(line.replace(self.findDirectiveName(line), ""))
+							#elif "DISALLOWED" in line:
+							#	self.disallowed = self.processListDirective(line)
 							elif "MAX_SYLLABLES" in line:
 								self.max_syllables = line.replace(self.findDirectiveName(line), "")
 								self.max_syllables.strip()
