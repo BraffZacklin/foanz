@@ -27,7 +27,8 @@ class Structures():
 				else:
 					new_structures = [entry+group for entry in valid_structures]
 				valid_structures = new_structures
-			
+		
+		valid_structures = set(valid_structures)
 		return valid_structures 
 
 	def structureToList(self, structure):
@@ -54,5 +55,5 @@ class Structures():
 
 if __name__ == "__main__":
 	structures = Structures()
-	print(structures.expandStructure("(C)V(C)"))
+	print(structures.expandStructure("(C)V(C/n/j)"))
 	print(structures.structureToList("(C)V(C/n)"))
