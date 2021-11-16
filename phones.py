@@ -27,7 +27,8 @@ class Phones():
 				location = "start"
 			else:
 				location = "all"
-			rule_dict[location].append(rule.replace("?", ""))
+			rule = rule.replace("?", "")			
+			rule_dict[location].append(rule)
 
 		return rule_dict
 
@@ -80,8 +81,8 @@ class Phones():
 				end = False
 				if x == length:
 					end = True
-
 				valid = self.checkValid(word + newSyllable, end=end)
+
 			word += newSyllable
 
 		return word
@@ -100,6 +101,7 @@ class Phones():
 			return choice(self.syllable_selection)
 
 	def checkValid(self, string, end=False):
+		string = string.replace(".", "")
 		for rule in self.disallowed["all"]:
 			if rule in string:
 				return False
@@ -110,9 +112,11 @@ class Phones():
 		for rule in self.disallowed["middle"]:
 			index = string.find(rule)
 			if index != -1:
-				if index != 0:
-					if end and index != len(string) - len(rule):
-						return False
+				if index == 0:
+					continue
+				if end and index == len(string) - len(rule):
+					continue
+				return False
 		if end:
 			for rule in self.disallowed["end"]:
 				index = string.find(rule)
