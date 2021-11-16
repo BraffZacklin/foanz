@@ -65,8 +65,8 @@ class Reader():
 								self.vowels = self.processListDirective(line)
 							elif "STRUCTURE" in line:
 								self.structures = Structures().expandStructure(line.replace(self.findDirectiveName(line), ""))
-							#elif "DISALLOWED" in line:
-							#	self.disallowed = self.processListDirective(line)
+							elif "DISALLOWED" in line:
+								self.disallowed = self.processListDirective(line)
 							elif "MAX_SYLLABLES" in line:
 								self.max_syllables = line.replace(self.findDirectiveName(line), "")
 								self.max_syllables.strip()
