@@ -5,7 +5,7 @@ class Phones():
 	def __init__(self, consonants, vowels, structures, disallowed, max_syllables):
 		self.consonants = consonants
 		self.vowels = vowels
-		self.structures = structures
+		self.structures = list(structures)
 		self.disallowed = self.parseDisallowed(disallowed)
 		self.min_syllables = 1
 		self.max_syllables = max_syllables
@@ -137,7 +137,6 @@ class Phones():
 
 if __name__ == "__main__":
 	phones = Phones(["p", "t", "k"], ["i", "a", "o"], ["CVC"], ["?ng?", "?ng"], 5)
-	#print(phones.makeWord(2))
 	print(phones.checkValid("strong", end=True)) # should be not valid
 	print(phones.checkValid("strngo", end=True)) # should be not valid
 	print(phones.checkValid("ng"))				 # should be valid
