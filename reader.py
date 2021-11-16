@@ -55,6 +55,7 @@ class Reader():
 					if line[0:2] == "//":
 						continue
 					line = self.removeComments(line)
+
 					if line[0] == "#":
 						try:
 							if "CONSONANTS" in line:
@@ -79,8 +80,7 @@ class Reader():
 							line = [line.strip() for line in line.split(":")]
 							if "(" in line and ")" in line:
 								continue
-
-							if line[0] == "?" and self.max_syllables == False:
+							elif line[0] == "?" and self.max_syllables == False:
 								print(f'foanz: MAX_SYLLABLES not defined but wildcard is used on line {index}')
 								print(f'\t{line}')
 								quit()
