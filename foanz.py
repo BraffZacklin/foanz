@@ -193,7 +193,7 @@ def main():
 			next_set = []
 		if current_set and reprint:
 			for index, word in enumerate(current_set):
-				print(f'{index}.) {word}')
+				print(f'{index}.) {word} ({word.replace(".", "")})')
 			reprint = False
 
 		user_input = getInput(": ")
