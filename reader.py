@@ -125,24 +125,40 @@ class Reader():
 				line_list = ":".join(line_list)
 				self.textfile_list[index] = line_list
 
+	def guessSyllables(self, word):
+		if word[0] in self.vowels:
+			vowel_cluster = True
+			syllables = 1
+		else:
+			vowel_cluster = False
+			syllables = 0
+
+		for char in word:
+			if char in self.vowels and vowel_cluster == False:
+				syllables += 1
+				vowel_cluster = True
+			elif char not in self.vowels and vowel_cluster == True:
+				vowel_cluster = False
+
+		return syllables
+
 	def addWord(self, word):
 		syllables = 1
 		definition = ""
 		key = ""
 
-		for char in word:
-			if char == ".":
-				syllables = syllables+1
-		syllables = str(syllables)
+		syllables = 0
+		if "." not in word:
+			syllables = self.guessSyllables(word)
+		else:			
+			for char in word:
+				if char == ".":
+					syllables = syllables+1
+			syllables = str(syllables)
 		
 		if syllables in self.reader_dictionary:
 			key = syllables
 			definition = choice(self.reader_dictionary[syllables])
-			#self.defineWord(word, definition)
-			#self.reader_dictionary[syllables].remove(definition)
-			#if not self.reader_dictionary[syllables]:
-			#	del self.reader_dictionary[syllables]
-			#match = True
 		elif "?" in self.reader_dictionary:
 			key = "?"
 			definition = choice(self.reader_dictionary["?"])
@@ -175,7 +191,8 @@ class Reader():
 
 if __name__ == "__main__":
 	reader = Reader("./example.txt")
-	reader.readDictionaryFile()
-	print(reader.reader_dictionary)
-	reader.defineWord("hi", "This word will be one syllable")
-	reader.save()
+	print(reader.guessSyllables("a"))
+	print(reader.guessSyllables("hi"))
+	print(reader.guessSyllables("ahhh"))
+	print(reader.guessSyllables("aha"))
+	print(reader.guessSyllables("othelo"))
