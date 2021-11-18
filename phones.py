@@ -13,7 +13,7 @@ class Phones():
 		self.delimiter = delimiter
 		
 		self.rng = default_rng()
-		print(self.disallowed["all"])
+		print(structures)
 
 	def expandable(self, rule):
 		if isinstance(rule, list):
@@ -29,7 +29,6 @@ class Phones():
 
 	def generatePermutationsList(self, rules):
 		expanded = []
-		print(rules)
 		if not self.expandable(rules):
 			return rules
 
@@ -135,6 +134,7 @@ class Phones():
 	def makeSyllable(self, structure, start=False, end=False):
 		syllable = ""
 
+		print(structure)
 		if start and structure[0] in list(self.definitions.keys()) and self.required["start"]:
 			intersection = list(set(self.required["start"]).intersection(self.definitions[structure[0]]))
 			if intersection:

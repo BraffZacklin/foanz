@@ -229,7 +229,7 @@ class Reader():
 					new_structures = [entry+group for entry in valid_structures]
 				valid_structures = new_structures
 		
-		valid_structures = set(valid_structures)
+		valid_structures = [x for x in set(valid_structures) if x != ""]
 		return valid_structures 
 
 	def structureToList(self, structure):
