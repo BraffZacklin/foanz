@@ -5,8 +5,6 @@ class Reader():
 		self.outfile = outfile
 		self.textfile_list = []
 		self.textfile = textfile
-		self.consonants = []
-		self.vowels = []
 		self.structures = []
 		self.disallowed = []
 		self.required = []
@@ -14,10 +12,11 @@ class Reader():
 		self.max_syllables = False
 		self.wordbank = []
 		self.delimiter = "."
+		self.definitions = {"C": [], "V": []}
 		self.readDictionaryFile()
 
 	def returnDirectives(self):
-		return self.consonants, self.vowels, self.structures, self.disallowed, self.max_syllables, self.required, self.delimiter
+		return self.definitions, self.structures, self.disallowed, self.max_syllables, self.required, self.delimiter
 
 	def removeComments(self, string):
 		if "//" in string:
@@ -43,10 +42,13 @@ class Reader():
 
 					if line[0] == "#":
 						try:
-							if "CONSONANTS" in line:
-								self.consonants = self.processListDirective(line)
-							elif "VOWELS" in line:
-								self.vowels = self.processListDirective(line)
+							if "CONSONANTS" in line or "DEFINE_C" in line:
+								self.definitions["C"] = self.processListDirective(line)
+							elif "VOWELS" in line or "DEFINE_V" in line:
+								self.definitions["V"] = self.processListDirective(line)
+							elif "DEFINE_" in line:
+								character = self.findDirectiveName(line)[-1]
+								self.definitions[character] = self.processListDirective(line)
 							elif "STRUCTURES" in line:
 								for struct in self.processListDirective(line):
 									self.structures += self.expandStructure(struct)
@@ -121,7 +123,7 @@ class Reader():
 				self.textfile_list[index] = line_list
 
 	def guessSyllables(self, word):
-		if word[0] in self.vowels:
+		if word[0] in self.definitions["V"]:
 			vowel_cluster = True
 			syllables = 1
 		else:
@@ -129,10 +131,10 @@ class Reader():
 			syllables = 0
 
 		for char in word:
-			if char in self.vowels and vowel_cluster == False:
+			if char in self.definitions["V"] and vowel_cluster == False:
 				syllables += 1
 				vowel_cluster = True
-			elif char not in self.vowels and vowel_cluster == True:
+			elif char not in self.definitions["V"] and vowel_cluster == True:
 				vowel_cluster = False
 
 		return syllables

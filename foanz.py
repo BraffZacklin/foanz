@@ -22,8 +22,8 @@ def printHelp():
 	print("\t\tas in your original dictionary file, or the last generated batch of words")
 	print("\t\tif provided a given number x, it will generate x words instead")
 	print()
-	print("\t(sh)uffle [consonants/vowels]")
-	print("\t\twill shuffle both consonants and vowels, unless only one is specified")
+	print("\t(sh)uffle [C/V/etc.]")
+	print("\t\twill shuffle all categories of sounds, unless only one is specified, or multiple separated by spaces")
 	print()
 	print("\t(s)yllables [x[.y.z]/x-y]")
 	print("\t\twill restrict generated words to a single length, or given range or dotted list of syllables")
@@ -58,11 +58,10 @@ def getInput(message):
 
 def processCommand(command):
 	global reader
+	global phones
 
 	new = False
 	more = False
-	shuffle_consonants = False
-	shuffle_vowels = False
 	apply_words = False
 	exit = False
 	syllables = False
@@ -99,14 +98,14 @@ def processCommand(command):
 
 		elif command.startswith("sh"):
 			if command == "shuffle" or command == "sh":
-				shuffle_vowels = True
-				shuffle_consonants = True
-			elif "vowels" in command:
-				shuffle_vowels = True
-			elif "consonants" in command:
-				shuffle_consonants = True
+				phones.shuffle("all")
 			else:
-				print("foanz: unexpected argument")
+				command_list = command.split()
+				for item in command_list[1:]:
+					try:
+						phones.shuffle(item)
+					except Exception:
+						print(f"foanz: {item} not valid sound list")
 			continue
 
 		elif command.startswith("a"):
@@ -159,8 +158,7 @@ def processCommand(command):
 			for word in command_list:
 				new_words.append(word)
 
-	return {"new": new, "more": more, "shuffle_consonants": shuffle_consonants, "shuffle_vowels": shuffle_vowels,
-			"apply_words": apply_words, "exit": exit, "indexes": indexes, "new_words": new_words, "syllables": syllables}
+	return {"new": new, "more": more, "apply_words": apply_words, "exit": exit, "indexes": indexes, "new_words": new_words, "syllables": syllables}
 
 def exitFoanz():
 	global wordbank
@@ -173,7 +171,9 @@ def printSettings():
 	global reader
 	global phones
 	syllables = phones.syllable_selection if phones.syllable_selection else list(range(phones.min_syllables, phones.max_syllables)) 
-	print(f'input_file: {reader.textfile}\noutput_file: {reader.outfile}\nvowels: {phones.vowels}\nconsonants: {phones.consonants}\nsyllables: {syllables}')
+	print(f'input_file: {reader.textfile}\noutput_file: {reader.outfile}\nsyllables: {syllables}')
+	for sound_list in list(reader.definitions.keys()):
+		print(f'{sound_list}: {reader.definitions[sound_list]}')
 
 def main():
 	global reader
@@ -209,15 +209,10 @@ def main():
 			print("New and more commands entered; more will be favoured")
 		
 		if command_dict["more"]:
-			if command_dict["shuffle_consonants"]:
-				phones.shuffleConsonants()
-			if command_dict["shuffle_vowels"]:
-				phones.shuffleVowels()
 			next_set = phones.generateWordPool(int(command_dict["more"]))
 			reprint = True
 		elif command_dict["new"]:
-			phones.shuffleVowels()
-			phones.shuffleConsonants()
+			phones.shuffleSounds("all")
 			next_set = phones.generateWordPool(int(command_dict["new"]))
 			reprint = True
 
@@ -282,8 +277,8 @@ if __name__ == "__main__":
 
 	reader = Reader(infile, outfile=outfile)
 	
-	consonants, vowels, structures, disallowed, max_syllables, required, delimiter = reader.returnDirectives()
-	phones = Phones(consonants, vowels, structures, disallowed, max_syllables, required, delimiter)
+	definitions, structures, disallowed, max_syllables, required, delimiter = reader.returnDirectives()
+	phones = Phones(definitions, structures, disallowed, max_syllables, required, delimiter)
 	wordbank = reader.wordbank
 	current_set = []
 	next_set = []

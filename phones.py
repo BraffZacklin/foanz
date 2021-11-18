@@ -2,19 +2,17 @@ from numpy.random import default_rng
 from random import choice, randrange
 
 class Phones():
-	def __init__(self, consonants, vowels, structures, disallowed, max_syllables, required, delimiter):
-		self.consonants = consonants
-		self.vowels = vowels
+	def __init__(self, definitions, structures, disallowed, max_syllables, required, delimiter):
+		self.definitions = definitions
 		self.structures = list(structures)
 		self.disallowed = self.parseDisallowed(disallowed)
 		self.min_syllables = 1
 		self.max_syllables = max_syllables
 		self.syllable_selection = False
 		self.delimiter = delimiter
+		self.definitions = {"C": [], "V": []}
 		
 		self.rng = default_rng()
-		self.zipf_consonants = self.getZipfDistribution(len(consonants))
-		self.zipf_vowels = self.getZipfDistribution(len(vowels))
 
 	def parseDisallowed(self, disallowed):
 		rule_dict = {"start": [], "middle": [], "end": [], "all": []}
@@ -33,11 +31,12 @@ class Phones():
 
 		return rule_dict
 
-	def shuffleConsonants(self):
-		self.rng.shuffle(self.consonants)
-
-	def shuffleVowels(self):
-		self.rng.shuffle(self.vowels)
+	def shuffleSounds(self, which_list):
+		if which_list == "all":
+			for key in list(self.definitions.keys()):
+				self.rng.shuffle(self.definitions[key])
+		else:
+			self.rng.shuffle(self.definitions[which_list])
 
 	def getHarmonic(self, N):
 		harmonic = 0
@@ -59,10 +58,8 @@ class Phones():
 	def makeSyllable(self, structure, start=False, end=False):
 		syllable = ""
 		for character in structure:
-			if character == "C":
-				newChar = self.rng.choice(self.consonants, p=self.zipf_consonants, shuffle=False)
-			elif character == "V":
-				newChar = self.rng.choice(self.vowels, p=self.zipf_vowels, shuffle=False)
+			if character in self.definitions.keys():
+				newChar = self.rng.choice(self.definitions[character], p=self.getZipfDistribution(len(self.definitions[character])), shuffle=False)
 			else:
 				newChar = character
 			syllable += newChar
