@@ -147,6 +147,8 @@ def processCommand(command):
 				reader.textfile = command_list[1]
 			try:
 				reader.readDictionaryFile()
+				definitions, structures, disallowed, max_syllables, required, delimiter = reader.returnDirectives()
+				phones = Phones(definitions, structures, disallowed, max_syllables, required, delimiter)
 			except Exception as e:
 				print(e)
 				print("foanz: bad filepath")

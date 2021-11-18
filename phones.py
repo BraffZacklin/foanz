@@ -102,29 +102,46 @@ class Phones():
 		else:
 			return choice(self.syllable_selection)
 
+	def generatePermutationsList(self, rule):
+		permutations = []
+		for char in rule:
+			if char in list(self.definitions.keys()):
+				for perm in self.definitions[char]:
+					permutations.append(rule.replace(char, perm))
+		return permutations
+
 	def checkValid(self, string, end=False):
 		string = string.replace(self.delimiter, "")
+
 		for rule in self.disallowed["all"]:
-			if rule in string:
-				return False
+			rule_list = self.generatePermutationsList(rule)
+			for perm in rule_list:
+				if perm in string:
+					return False
 		for rule in self.disallowed["start"]:
-			rule_length = len(rule)
-			if string[0:rule_length] == rule:
-				return False
+			rule_list = self.generatePermutationsList(rule)
+			for perm in rule_list:
+				rule_length = len(perm)
+				if string[0:rule_length] == perm:
+					return False
 		for rule in self.disallowed["middle"]:
-			index = string.find(rule)
-			if index != -1:
-				if index == 0:
-					continue
-				if end and index == len(string) - len(rule):
-					continue
-				return False
+			rule_list = self.generatePermutationsList(rule)
+			for perm in rule_list:
+				index = string.find(perm)
+				if index != -1:
+					if index == 0:
+						continue
+					if end and index == len(string) - len(perm):
+						continue
+					return False
 		if end:
 			for rule in self.disallowed["end"]:
-				index = string.find(rule)
-				if index != -1:
-					if index == len(string) - len(rule):
-						return False	
+				rule_list = self.generatePermutationsList(rule)
+				for perm in rule_list:
+					index = string.find(perm)
+					if index != -1:
+						if index == len(string) - len(perm):
+							return False	
 		return True
 
 	def generateWordPool(self, word_count):
