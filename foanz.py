@@ -36,7 +36,7 @@ def printHelp():
 	print()
 	print("\tadd word[ words...]")
 	print("\t\ta word or space separated list of words to add -- use '.' to disambiguate")
-	print("\t\tsyllables when multiple consonants/vowel clusters exist")
+	print("\t\tsyllables when vowel/consonant cluster guessing alone isn't working")
 	print()
 	print("\t(e)xit")
 	print("\t\twill exit without updating words")
@@ -108,6 +108,11 @@ def processCommand(command):
 						print(f"foanz: {item} not valid sound list")
 			continue
 
+		elif command.startswith("add"):
+			command_list = command.split()
+			for word in command_list:
+				new_words.append(word)
+
 		elif command.startswith("a"):
 			apply_words = True
 			command_list = command.split()
@@ -154,11 +159,6 @@ def processCommand(command):
 				print("foanz: bad filepath")
 				reader.textfile = old_file
 			continue
-
-		elif command.startswith("add"):
-			command_list = command.split()
-			for word in command_list:
-				new_words.append(word)
 
 	return {"new": new, "more": more, "apply_words": apply_words, "exit": exit, "indexes": indexes, "new_words": new_words, "syllables": syllables}
 

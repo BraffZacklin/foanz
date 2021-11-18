@@ -3,31 +3,51 @@ from random import choice, randrange
 
 class Phones():
 	def __init__(self, definitions, structures, disallowed, max_syllables, required, delimiter):
-		self.definitions = definitions
 		self.structures = list(structures)
+		self.definitions = definitions
 		self.disallowed = self.parseDisallowed(disallowed)
+		self.required = self.parseRequired(required)
 		self.min_syllables = 1
 		self.max_syllables = max_syllables
 		self.syllable_selection = False
 		self.delimiter = delimiter
-		self.definitions = {"C": [], "V": []}
 		
 		self.rng = default_rng()
+
+		print(self.disallowed)
+		print(self.required)
+
+	def parseRequired(self, required):
+		rule_dict = {"start" : [], "end" : []}
+
+		for generic_rule in required:
+			for rule in self.generatePermutationsList(generic_rule):
+				if rule[0] == "?" and rule[-1] == "?":
+					raise ValueError(f"Invalid value for rule {generic_rule}")
+				elif rule[-1] == "?":
+					location = "start"
+				elif rule[0] == "?":
+					location = "end"
+				rule = rule.replace("?", "")
+				rule_dict[location].append(rule)
+
+		return rule_dict
 
 	def parseDisallowed(self, disallowed):
 		rule_dict = {"start": [], "middle": [], "end": [], "all": []}
 
 		for rule in disallowed:
-			if rule[0] == "?" and rule[-1] == "?":
-				location = "middle"
-			elif rule[0] == "?":
-				location = "end"
-			elif rule[-1] == "?":
-				location = "start"
-			else:
-				location = "all"
-			rule = rule.replace("?", "")			
-			rule_dict[location].append(rule)
+			for rule in self.generatePermutationsList(rule):
+				if rule[0] == "?" and rule[-1] == "?":
+					location = "middle"
+				elif rule[0] == "?":
+					location = "end"
+				elif rule[-1] == "?":
+					location = "start"
+				else:
+					location = "all"
+				rule = rule.replace("?", "")			
+				rule_dict[location].append(rule)
 
 		return rule_dict
 
@@ -55,11 +75,11 @@ class Phones():
 			distribution.append(self.getZipfFrequency(k, N))
 		return distribution
 
-	def makeSyllable(self, structure, start=False, end=False):
+	def makeSyllable(self, structure):
 		syllable = ""
 		for character in structure:
-			if character in self.definitions.keys():
-				newChar = self.rng.choice(self.definitions[character], p=self.getZipfDistribution(len(self.definitions[character])), shuffle=False)
+			if character in list(self.definitions.keys()):
+				newChar = self.rng.choice(self.definitions[character], shuffle=False)
 			else:
 				newChar = character
 			syllable += newChar
@@ -80,11 +100,16 @@ class Phones():
 			if x == 0:
 				start = True
 
-			valid = False
 			newSyllable = ""
-			while not valid:
-				newSyllable = self.makeSyllable(self.getRandomStructure(), end=end, start=start)
-				valid = self.checkValid(word + newSyllable, end=end)
+
+			if start and self.required["start"]:			
+				word = self.rng.choice(self.required["start"])
+
+			newSyllable = self.makeSyllable(self.getRandomStructure())
+
+			if end and self.required["end"]:
+				newSyllable += self.rng.choice(self.required["end"])
+
 			word += newSyllable
 
 		return word
@@ -104,44 +129,57 @@ class Phones():
 
 	def generatePermutationsList(self, rule):
 		permutations = []
+		special_chars = False
 		for char in rule:
 			if char in list(self.definitions.keys()):
+				special_chars = True
 				for perm in self.definitions[char]:
 					permutations.append(rule.replace(char, perm))
-		return permutations
+
+		if special_chars:
+			return permutations
+		else:
+			return [rule]
 
 	def checkValid(self, string, end=False):
 		string = string.replace(self.delimiter, "")
 
 		for rule in self.disallowed["all"]:
-			rule_list = self.generatePermutationsList(rule)
-			for perm in rule_list:
-				if perm in string:
-					return False
+			if rule in string:
+				return False
+
 		for rule in self.disallowed["start"]:
-			rule_list = self.generatePermutationsList(rule)
-			for perm in rule_list:
-				rule_length = len(perm)
-				if string[0:rule_length] == perm:
-					return False
+			if string.startswith(rule):
+				return False
+
 		for rule in self.disallowed["middle"]:
-			rule_list = self.generatePermutationsList(rule)
-			for perm in rule_list:
-				index = string.find(perm)
-				if index != -1:
-					if index == 0:
-						continue
-					if end and index == len(string) - len(perm):
-						continue
-					return False
+			index = string.find(rule)
+			if index != -1 and not string.startswith(rule) and not string.endswith(rule):
+				return False
+		
+		required_match = False
+		for rule in self.required["start"]:
+			if string.startswith(rule):
+				required_match = True
+
+		if not required_match:
+			return False
+
 		if end:
+			required_match = False
+			
+			for rule in self.required["end"]:
+				if string.endswith(rule):
+					required_match = True
+
 			for rule in self.disallowed["end"]:
-				rule_list = self.generatePermutationsList(rule)
-				for perm in rule_list:
-					index = string.find(perm)
-					if index != -1:
-						if index == len(string) - len(perm):
-							return False	
+				index = string.find(rule)
+				if index != -1 and not string.endswith(rule):
+					return False
+
+			if not required_match:
+				return False
+
 		return True
 
 	def generateWordPool(self, word_count):
@@ -149,7 +187,7 @@ class Phones():
 
 		while len(pool) < word_count:
 			word = self.makeWord(self.getRandomLength())
-			if word not in pool:
+			if word not in pool and self.checkValid(word, end=True):
 				pool.append(word)
 
 		return pool

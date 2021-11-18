@@ -63,7 +63,7 @@ class Reader():
 							elif "DELIMITER" in line:
 								self.delimiter = line.replace(self.findDirectiveName(line), "").strip()
 							elif "DUPLICATES" in line:
-								self.duplicates = lower(line.replace(self.findDirectiveName(line), "").strip())
+								self.duplicates = line.replace(self.findDirectiveName(line), "").strip().lower()
 								if self.duplicates not in ["allow", "deny", "warn"]:
 									raise ValueError
 							else:
