@@ -14,7 +14,6 @@ class Phones():
 		
 		self.rng = default_rng()
 
-		print(self.disallowed)
 		print(self.required)
 
 	def parseRequired(self, required):
@@ -75,8 +74,21 @@ class Phones():
 			distribution.append(self.getZipfFrequency(k, N))
 		return distribution
 
-	def makeSyllable(self, structure):
+	def makeSyllable(self, structure, start=False, end=False):
 		syllable = ""
+
+		if start and structure[0] in list(self.definitions.keys()) and self.required["start"]:
+			intersection = list(set(self.required["start"]).intersection(self.definitions[structure[0]]))
+			if intersection:
+				replacement = self.rng.choice(intersection, shuffle=False)
+				structure = replacement + structure[1:]
+
+		if end and structure[-1] in list(self.definitions.keys()) and self.required["end"]:
+			intersection = list(set(self.required["end"]).intersection(self.definitions[structure[-1]]))
+			if intersection:
+				replacement = self.rng.choice(intersection, shuffle=False)
+				structure = structure[:-1] + replacement
+
 		for character in structure:
 			if character in list(self.definitions.keys()):
 				newChar = self.rng.choice(self.definitions[character], shuffle=False)
@@ -88,29 +100,25 @@ class Phones():
 
 	def makeWord(self, length): #Structures may be a list or a single structure
 		word = ""
-		for x in range(0, length):
-			if word != "":
-				word += self.delimiter
+		valid = False
 
-			start = False
-			end = False
+		while not valid:
+			word = ""
+			for x in range(0, length):
+				if word != "":
+					word += self.delimiter
 
-			if x == length-1:
-				end = True
-			if x == 0:
-				start = True
+				start = False
+				end = False
 
-			newSyllable = ""
+				if x == length-1:
+					end = True
+				if x == 0:
+					start = True
 
-			if start and self.required["start"]:			
-				word = self.rng.choice(self.required["start"])
+				word += self.makeSyllable(self.getRandomStructure(), start=start, end=end)
 
-			newSyllable = self.makeSyllable(self.getRandomStructure())
-
-			if end and self.required["end"]:
-				newSyllable += self.rng.choice(self.required["end"])
-
-			word += newSyllable
+			valid = self.checkValid(word, end=True)
 
 		return word
 
@@ -146,39 +154,45 @@ class Phones():
 
 		for rule in self.disallowed["all"]:
 			if rule in string:
+				#print(f'{string} violates disallowed rule !{rule}')
 				return False
 
 		for rule in self.disallowed["start"]:
 			if string.startswith(rule):
+				#print(f'{string} violates disallowed start rule !{rule}')
 				return False
 
 		for rule in self.disallowed["middle"]:
 			index = string.find(rule)
 			if index != -1 and not string.startswith(rule) and not string.endswith(rule):
+				#print(f'{string} violates disallowed middle !{rule}')
 				return False
 		
 		required_match = False
-		for rule in self.required["start"]:
-			if string.startswith(rule):
-				required_match = True
-
-		if not required_match:
-			return False
+		if self.required["start"]:
+			for rule in self.required["start"]:
+				if string.startswith(rule):
+					required_match = True
+			if not required_match:
+				#print(f'{string} violates required start')
+				return False
 
 		if end:
 			required_match = False
-			
-			for rule in self.required["end"]:
-				if string.endswith(rule):
-					required_match = True
+
+			if self.required["end"]:			
+				for rule in self.required["end"]:
+					if string.endswith(rule):
+						required_match = True
+				if not required_match:
+					#print(f'{string} violates required end')
+					return False
 
 			for rule in self.disallowed["end"]:
 				index = string.find(rule)
-				if index != -1 and not string.endswith(rule):
+				if index != -1 and string.endswith(rule):
+					#print(f'{string} violates end rule !{rule}')
 					return False
-
-			if not required_match:
-				return False
 
 		return True
 
@@ -187,7 +201,7 @@ class Phones():
 
 		while len(pool) < word_count:
 			word = self.makeWord(self.getRandomLength())
-			if word not in pool and self.checkValid(word, end=True):
+			if word not in pool:
 				pool.append(word)
 
 		return pool

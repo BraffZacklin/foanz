@@ -3,12 +3,12 @@
 #CONSONANTS 	p, t, k, m, ng, r, l, s, x, y, w, f		// Same as #DEFINE_C, below is same as #DEFINE_V
 #VOWELS 		a,e,i,o,u								// Spaces are not necessary, the comma is
 #STRUCTURES		(C)V(C/n)								// May be a comma separated list of multiple structures							
-#DISALLOWED		rl?, ?ml, ?ng?, sr, ?V					// Bans "sr" in any position; "ng" in the middle of a word, "ml" at the end of a word, "rl" and the beginning of a word
+#DISALLOWED		rl?, ?ml, ?ng?, sr						// Bans "sr" in any position; "ng" in the middle of a word, "ml" at the end of a word, "rl" and the beginning of a word
 #MAX_SYLLABLES 	5										// Max repetitions of structures to use -- this 'syllable' is defined differntly than the entries syllables
 #DUPLICATES 	deny									// May be 'allow', 'deny', or 'warn' 						
 #DELIMITER		. 										// '.' is default
 #DEFINE_X		a, b, c 								// These may be used in structures
-#REQUIRED		C?										// Forces all words to start with p and end with vowels
+#REQUIRED		C?, ?C									// Forces all words to start with consonants
 
 // These are entries
 1: This word will be one syllable
