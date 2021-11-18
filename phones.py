@@ -33,13 +33,13 @@ class Phones():
 				for char in rule:
 					if self.expandable(char):
 						for perm in self.definitions[char]:
-							expanded.append(rule.replace(char, perm))
+							expanded.append(rule.replace(char, perm, 1))
 		elif isinstance(rules, str):
 			rule = rules
 			for char in rule:
 				if self.expandable(char):
 					for perm in self.definitions[char]:
-						expanded.append(rule.replace(char, perm))
+						expanded.append(rule.replace(char, perm, 1))
 		else:
 			raise ValueError("Non-str or list argument given to generatePermutationsList function")
 
