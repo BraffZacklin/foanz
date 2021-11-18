@@ -34,14 +34,15 @@ def printHelp():
 	print("\t\tif you leave filename blank, it will use your last-used filename")
 	print("\t\tor it will default to default.txt")
 	print()
+	print("\tadd word[ words...]")
+	print("\t\ta word or space separated list of words to add -- use '.' to disambiguate")
+	print("\t\tsyllables when multiple consonants/vowel clusters exist")
+	print()
 	print("\t(e)xit")
 	print("\t\twill exit without updating words")
 	print()
 	print("When given a list of words, entering their indexes in a comma-separated list")
 	print("\twill auto-fill blank entries in your dictionary file as directed")
-	print("Alternatively, new words can be added by typing your own in; syllable boundaries")
-	print("\tmay need to be indicated with full stops (foanz will attempt to guess based")
-	print("\ton the number of vowel clusters), and single quotes (') MUST wrap your words")
 	print("TIP: Multiple commands can be issued with a comma-separated list and they will be processed one-by-one")
 	print()
 	print("PROTIP: You can launch foanz with:")
@@ -70,10 +71,7 @@ def processCommand(command):
 
 	command_list = [n.strip() for n in command.split(",") if n.strip() != ""]
 	for command in command_list:
-		if "'" in command:
-			new_words.append(command.replace("'", ""))
-			continue
-		elif command.isdigit():
+		if command.isdigit():
 			indexes.append(int(command))
 			continue
 
@@ -154,12 +152,19 @@ def processCommand(command):
 				print(e)
 				print("foanz: bad filepath")
 				reader.textfile = old_file
+			continue
+
+		elif command.startswith("add"):
+			command_list = command.split()
+			for word in command_list:
+				new_words.append(word)
 
 	return {"new": new, "more": more, "shuffle_consonants": shuffle_consonants, "shuffle_vowels": shuffle_vowels,
 			"apply_words": apply_words, "exit": exit, "indexes": indexes, "new_words": new_words, "syllables": syllables}
 
 def exitFoanz():
 	global wordbank
+	global reader
 
 	reader.save(wordbank)
 	quit()
