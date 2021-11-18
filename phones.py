@@ -2,7 +2,7 @@ from numpy.random import default_rng
 from random import choice, randrange
 
 class Phones():
-	def __init__(self, consonants, vowels, structures, disallowed, max_syllables, required):
+	def __init__(self, consonants, vowels, structures, disallowed, max_syllables, required, delimiter):
 		self.consonants = consonants
 		self.vowels = vowels
 		self.structures = list(structures)
@@ -10,6 +10,7 @@ class Phones():
 		self.min_syllables = 1
 		self.max_syllables = max_syllables
 		self.syllable_selection = False
+		self.delimiter = delimiter
 		
 		self.rng = default_rng()
 		self.zipf_consonants = self.getZipfDistribution(len(consonants))
@@ -72,7 +73,7 @@ class Phones():
 		word = ""
 		for x in range(0, length):
 			if word != "":
-				word += '.'
+				word += self.delimiter
 
 			start = False
 			end = False
@@ -105,7 +106,7 @@ class Phones():
 			return choice(self.syllable_selection)
 
 	def checkValid(self, string, end=False):
-		string = string.replace(".", "")
+		string = string.replace(self.delimiter, "")
 		for rule in self.disallowed["all"]:
 			if rule in string:
 				return False

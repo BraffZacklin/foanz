@@ -128,8 +128,8 @@ def processCommand(command):
 			else:
 				command_list = command.split()
 				try:
-					if "." in command_list[1]:
-						syllables = [int(number.strip()) for number in command_list[1].split(".")]
+					if reader.delimiter in command_list[1]:
+						syllables = [int(number.strip()) for number in command_list[1].split(reader.delimiter)]
 					elif "-" in command_list[1]:
 						syllables_list = [int(n.strip()) for n in command_list[1].split("-")]
 						syllables = list(range(syllables_list[0], syllables_list[1]+1))
@@ -194,7 +194,7 @@ def main():
 			next_set = []
 		if current_set and reprint:
 			for index, word in enumerate(current_set):
-				print(f'{index}.) {word} ({word.replace(".", "")})')
+				print(f'{index}.) {word} ({word.replace(reader.delimiter, "")})')
 			reprint = False
 
 		user_input = getInput(": ")
@@ -277,8 +277,8 @@ if __name__ == "__main__":
 
 	reader = Reader(infile, outfile=outfile)
 	
-	consonants, vowels, structures, disallowed, max_syllables, required = reader.returnDirectives()
-	phones = Phones(consonants, vowels, structures, disallowed, max_syllables, required)
+	consonants, vowels, structures, disallowed, max_syllables, required, delimiter = reader.returnDirectives()
+	phones = Phones(consonants, vowels, structures, disallowed, max_syllables, required, delimiter)
 	wordbank = reader.wordbank
 	current_set = []
 	next_set = []

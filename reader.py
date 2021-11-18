@@ -13,10 +13,11 @@ class Reader():
 		self.reader_dictionary = {}
 		self.max_syllables = False
 		self.wordbank = []
+		self.delimiter = "."
 		self.readDictionaryFile()
 
 	def returnDirectives(self):
-		return self.consonants, self.vowels, self.structures, self.disallowed, self.max_syllables, self.required
+		return self.consonants, self.vowels, self.structures, self.disallowed, self.max_syllables, self.required, self.delimiter
 
 	def removeComments(self, string):
 		if "//" in string:
@@ -46,8 +47,9 @@ class Reader():
 								self.consonants = self.processListDirective(line)
 							elif "VOWELS" in line:
 								self.vowels = self.processListDirective(line)
-							elif "STRUCTURE" in line:
-								self.structures = self.expandStructure(line.replace(self.findDirectiveName(line), ""))
+							elif "STRUCTURES" in line:
+								for struct in self.processListDirective(line):
+									self.structures += self.expandStructure(struct)
 							elif "DISALLOWED" in line:
 								self.disallowed = self.processListDirective(line)
 							elif "MAX_SYLLABLES" in line:
@@ -56,6 +58,8 @@ class Reader():
 								self.max_syllables = int(self.max_syllables)+1
 							elif "REQUIRED" in line:
 								self.required = self.processListDirective(line)
+							elif "DELIMITER" in line:
+								self.delimiter = line.replace(self.findDirectiveName(line), "").strip()
 							elif "DUPLICATES" in line:
 								self.duplicates = lower(line.replace(self.findDirectiveName(line), "").strip())
 								if self.duplicates not in ["allow", "deny", "warn"]:
@@ -107,8 +111,8 @@ class Reader():
 			self.textfile_list.remove(line)
 
 	def defineWord(self, word, definition):
-		if "." in word:
-			word = word.replace(".", "")
+		if self.delimiter in word:
+			word = word.replace(self.delimiter, "")
 		for index, line in enumerate(self.textfile_list):
 			if definition in line:
 				line_list = line.split(":")
@@ -156,11 +160,11 @@ class Reader():
 		key = ""
 
 		syllables = 0
-		if "." not in word:
+		if self.delimiter not in word:
 			syllables = self.guessSyllables(word)
 		else:			
 			for char in word:
-				if char == ".":
+				if char == self.delimiter:
 					syllables = syllables+1
 			syllables = str(syllables)
 		
