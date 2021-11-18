@@ -13,6 +13,7 @@ class Phones():
 		self.delimiter = delimiter
 		
 		self.rng = default_rng()
+		print(self.disallowed["all"])
 
 	def expandable(self, rule):
 		if isinstance(rule, list):
@@ -28,20 +29,32 @@ class Phones():
 
 	def generatePermutationsList(self, rules):
 		expanded = []
-		if isinstance(rules, list):
+		print(rules)
+		if not self.expandable(rules):
+			return rules
+
+		if type(rules) is list:
 			for rule in rules:
+				any_expansions = False
 				for char in rule:
 					if self.expandable(char):
 						for perm in self.definitions[char]:
+							any_expansions = True
 							expanded.append(rule.replace(char, perm, 1))
-		elif isinstance(rules, str):
+				if not any_expansions:
+					expanded.append(rule)
+		elif type(rules) is str:
 			rule = rules
+			any_expansions = False
 			for char in rule:
 				if self.expandable(char):
 					for perm in self.definitions[char]:
 						expanded.append(rule.replace(char, perm, 1))
+						any_expansions = True
+			if not any_expansions:
+				expanded.append(rule)
 		else:
-			raise ValueError("Non-str or list argument given to generatePermutationsList function")
+			raise ValueError("foanz: Non-str or list argument given to generatePermutationsList function")
 
 		if self.expandable(expanded):
 			return self.generatePermutationsList(expanded)
@@ -52,23 +65,35 @@ class Phones():
 		rule_dict = {"start" : [], "end" : []}
 
 		for generic_rule in required:
-			for rule in self.generatePermutationsList(generic_rule):
+			if self.expandable(generic_rule):
+				rules = self.generatePermutationsList(generic_rule)
+			else:
+				rules = [generic_rule]
+			for rule in rules:
 				if rule[0] == "?" and rule[-1] == "?":
-					raise ValueError(f"Invalid value for rule {generic_rule}")
+					print(f"foanz: Invalid value for rule {generic_rule}: {rule}")
+					break
 				elif rule[-1] == "?":
 					location = "start"
 				elif rule[0] == "?":
 					location = "end"
+				else:
+					location = "all"
 				rule = rule.replace("?", "")
-				rule_dict[location].append(rule)
+				if rule not in rule_dict[location]:
+					rule_dict[location].append(rule)
 
 		return rule_dict
 
 	def parseDisallowed(self, disallowed):
 		rule_dict = {"start": [], "middle": [], "end": [], "all": []}
 
-		for rule in disallowed:
-			for rule in self.generatePermutationsList(rule):
+		for generic_rule in disallowed:
+			if self.expandable(generic_rule):
+				rules = self.generatePermutationsList(generic_rule)
+			else:
+				rules = [generic_rule]
+			for rule in rules:
 				if rule[0] == "?" and rule[-1] == "?":
 					location = "middle"
 				elif rule[0] == "?":
@@ -77,8 +102,9 @@ class Phones():
 					location = "start"
 				else:
 					location = "all"
-				rule = rule.replace("?", "")			
-				rule_dict[location].append(rule)
+				rule = rule.replace("?", "")	
+				if rule not in rule_dict[location]:
+					rule_dict[location].append(rule)
 
 		return rule_dict
 
@@ -172,18 +198,18 @@ class Phones():
 
 		for rule in self.disallowed["all"]:
 			if rule in string:
-				#print(f'{string} violates disallowed rule !{rule}')
+				print(f'{string} violates disallowed rule !{rule}')
 				return False
 
 		for rule in self.disallowed["start"]:
 			if string.startswith(rule):
-				#print(f'{string} violates disallowed start rule !{rule}')
+				print(f'{string} violates disallowed start rule !{rule}')
 				return False
 
 		for rule in self.disallowed["middle"]:
 			index = string.find(rule)
 			if index != -1 and not string.startswith(rule) and not string.endswith(rule):
-				#print(f'{string} violates disallowed middle !{rule}')
+				print(f'{string} violates disallowed middle !{rule}')
 				return False
 		
 		required_match = False
@@ -192,7 +218,7 @@ class Phones():
 				if string.startswith(rule):
 					required_match = True
 			if not required_match:
-				#print(f'{string} violates required start')
+				print(f'{string} violates required start')
 				return False
 
 		if end:
@@ -203,13 +229,13 @@ class Phones():
 					if string.endswith(rule):
 						required_match = True
 				if not required_match:
-					#print(f'{string} violates required end')
+					print(f'{string} violates required end')
 					return False
 
 			for rule in self.disallowed["end"]:
 				index = string.find(rule)
 				if index != -1 and string.endswith(rule):
-					#print(f'{string} violates end rule !{rule}')
+					print(f'{string} violates end rule !{rule}')
 					return False
 
 		return True
