@@ -14,7 +14,39 @@ class Phones():
 		
 		self.rng = default_rng()
 
-		print(self.required)
+	def expandable(self, rule):
+		if isinstance(rule, list):
+			for rule in rule:
+				for char in rule:
+					if char in list(self.definitions.keys()):
+						return True
+		elif isinstance(rule, str):
+			for char in rule:
+				if char in list(self.definitions.keys()):
+					return True
+		return False
+
+	def generatePermutationsList(self, rules):
+		expanded = []
+		if isinstance(rules, list):
+			for rule in rules:
+				for char in rule:
+					if self.expandable(char):
+						for perm in self.definitions[char]:
+							expanded.append(rule.replace(char, perm))
+		elif isinstance(rules, str):
+			rule = rules
+			for char in rule:
+				if self.expandable(char):
+					for perm in self.definitions[char]:
+						expanded.append(rule.replace(char, perm))
+		else:
+			raise ValueError("Non-str or list argument given to generatePermutationsList function")
+
+		if self.expandable(expanded):
+			return self.generatePermutationsList(expanded)
+		else:
+			return expanded
 
 	def parseRequired(self, required):
 		rule_dict = {"start" : [], "end" : []}
@@ -134,20 +166,6 @@ class Phones():
 			return randrange(self.min_syllables, self.max_syllables)
 		else:
 			return choice(self.syllable_selection)
-
-	def generatePermutationsList(self, rule):
-		permutations = []
-		special_chars = False
-		for char in rule:
-			if char in list(self.definitions.keys()):
-				special_chars = True
-				for perm in self.definitions[char]:
-					permutations.append(rule.replace(char, perm))
-
-		if special_chars:
-			return permutations
-		else:
-			return [rule]
 
 	def checkValid(self, string, end=False):
 		string = string.replace(self.delimiter, "")
