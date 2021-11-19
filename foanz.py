@@ -182,7 +182,14 @@ def printSettings():
 	print(f'input_file: {reader.textfile}\noutput_file: {reader.outfile}\nsyllables: {syllables}')
 	for sound_list in list(reader.definitions.keys()):
 		print(f'{sound_list}: {reader.definitions[sound_list]}')
-	print(f'structures: {phones.structures}\ndefinitions: {phones.definitions}\ndisallowed: {phones.disallowed}\nrequired: {phones.required}\ndebug_valid: {phones.debug_valid}')
+	print(f'structures: {phones.structures}\ndebug_valid: {phones.debug_valid}')
+	#disallowed: {phones.disallowed}\nrequired: {phones.required}
+	print("disallowed:")
+	for key in list(phones.disallowed.keys()):
+		print(f'\t{key}: {phones.disallowed[key]}')
+	print("required:")
+	for key in list(phones.required.keys()):
+		print(f'\t{key}: {phones.required[key]}')
 	print()
 
 def main():
@@ -287,8 +294,8 @@ if __name__ == "__main__":
 
 	reader = Reader(infile, outfile=outfile)
 	
-	definitions, structures, disallowed, max_syllables, required, delimiter = reader.returnDirectives()
-	phones = Phones(definitions, structures, disallowed, max_syllables, required, delimiter)
+	definitions, structures, disallowed, max_syllables, required, delimiter, debug_valid = reader.returnDirectives()
+	phones = Phones(definitions, structures, disallowed, max_syllables, required, delimiter, debug_valid)
 	wordbank = reader.wordbank
 	current_set = []
 	next_set = []
