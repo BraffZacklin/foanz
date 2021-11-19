@@ -32,6 +32,16 @@ class Reader():
 		#return [(self.removeComments(n).strip()) for n in line.split(",")]
 		return [(n.strip()) for n in line.split(",")]
 
+	def processPhonemesList(self, line, letter=""):
+		if not letter:
+			letter = self.findDirectiveName(line)[-1]
+		phones_list = self.processListDirective(line)
+		for phone in phones_list:
+			if phone in list(self.definitions.keys()):
+				phones_list.remove(phone)
+				phones_list += self.definitions[phone]
+		self.definitions[letter] = phones_list
+
 	def readDictionaryFile(self):
 		try:
 			with open(self.textfile, "r") as file:
@@ -44,12 +54,11 @@ class Reader():
 					if line[0] == "#":
 						try:
 							if "CONSONANTS" in line or "DEFINE_C" in line:
-								self.definitions["C"] = self.processListDirective(line)
+								self.processPhonemesList(line, letter="C")
 							elif "VOWELS" in line or "DEFINE_V" in line:
-								self.definitions["V"] = self.processListDirective(line)
+								self.processPhonemesList(line, letter="V")
 							elif "DEFINE_" in line:
-								character = self.findDirectiveName(line)[-1]
-								self.definitions[character] = self.processListDirective(line)
+								self.processPhonemesList(line)
 							elif "STRUCTURES" in line:
 								for struct in self.processListDirective(line):
 									self.structures += self.expandStructure(struct)

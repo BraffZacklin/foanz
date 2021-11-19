@@ -14,7 +14,6 @@ class Phones():
 		self.debug_valid = debug_valid
 		
 		self.rng = default_rng()
-		print(structures)
 
 	def expandable(self, rule):
 		if isinstance(rule, list):
@@ -135,7 +134,6 @@ class Phones():
 	def makeSyllable(self, structure, start=False, end=False):
 		syllable = ""
 
-		print(structure)
 		if start and structure[0] in list(self.definitions.keys()) and self.required["start"]:
 			intersection = list(set(self.required["start"]).intersection(self.definitions[structure[0]]))
 			if intersection:
@@ -199,20 +197,20 @@ class Phones():
 
 		for rule in self.disallowed["all"]:
 			if rule in string:
-				if debug_valid:
+				if self.debug_valid:
 					print(f'foanz: debug_valid: {string} violates disallowed rule !{rule}')
 				return False
 
 		for rule in self.disallowed["start"]:
 			if string.startswith(rule):
-				if debug_valid:
+				if self.debug_valid:
 					print(f'foanz: debug_valid: {string} violates disallowed start rule !{rule}')
 				return False
 
 		for rule in self.disallowed["middle"]:
 			index = string.find(rule)
 			if index != -1 and not string.startswith(rule) and not string.endswith(rule):
-				if debug_valid:
+				if self.debug_valid:
 					print(f'foanz: debug_valid: {string} violates disallowed middle !{rule}')
 				return False
 		
@@ -222,7 +220,7 @@ class Phones():
 				if string.startswith(rule):
 					required_match = True
 			if not required_match:
-				if debug_valid:
+				if self.debug_valid:
 					print(f'foanz: debug_valid: {string} violates required start')
 				return False
 
@@ -234,14 +232,14 @@ class Phones():
 					if string.endswith(rule):
 						required_match = True
 				if not required_match:
-					if debug_valid:
+					if self.debug_valid:
 						print(f'foanz: debug_valid: {string} violates required end')
 					return False
 
 			for rule in self.disallowed["end"]:
 				index = string.find(rule)
 				if index != -1 and string.endswith(rule):
-					if debug_valid:
+					if self.debug_valid:
 						print(f'foanz: debug_valid: {string} violates end rule !{rule}')
 					return False
 
