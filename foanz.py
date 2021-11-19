@@ -38,6 +38,9 @@ def printHelp():
 	print("\t\ta word or space separated list of words to add -- use '.' to disambiguate")
 	print("\t\tsyllables when vowel/consonant cluster guessing alone isn't working")
 	print()
+	print("\t(o)ptions")
+	print("\t\tprints all user or textfile-defined settings")
+	print()
 	print("\t(e)xit")
 	print("\t\twill exit without updating words")
 	print()
@@ -160,6 +163,9 @@ def processCommand(command):
 				reader.textfile = old_file
 			continue
 
+		elif command.startswith("o"):
+			printSettings()
+
 	return {"new": new, "more": more, "apply_words": apply_words, "exit": exit, "indexes": indexes, "new_words": new_words, "syllables": syllables}
 
 def exitFoanz():
@@ -176,6 +182,8 @@ def printSettings():
 	print(f'input_file: {reader.textfile}\noutput_file: {reader.outfile}\nsyllables: {syllables}')
 	for sound_list in list(reader.definitions.keys()):
 		print(f'{sound_list}: {reader.definitions[sound_list]}')
+	print(f'structures: {phones.structures}\ndefinitions: {phones.definitions}\ndisallowed: {phones.disallowed}\nrequired: {phones.required}\ndebug_valid: {phones.debug_valid}')
+	print()
 
 def main():
 	global reader
@@ -189,12 +197,12 @@ def main():
 	print()
 	exit = False
 	reprint = False
+	printSettings()
 
 	while True:
 		if exit == True:
 			exitFoanz()
 		
-		printSettings()
 
 		if next_set:
 			current_set = next_set
@@ -208,7 +216,7 @@ def main():
 		command_dict = processCommand(user_input)
 
 		if command_dict["new"] != False and command_dict["more"] != False:
-			print("New and more commands entered; more will be favoured")
+			print("foanz: new and more commands entered; more will be favoured")
 		
 		if command_dict["more"]:
 			next_set = phones.generateWordPool(int(command_dict["more"]))
