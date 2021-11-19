@@ -3,7 +3,8 @@
 #DEFINE_P		p, t, k 								// These may be used in structures -- note "Pr" will not generate pr, kr, tr, but just remain "Pr"
 #CONSONANTS		P, m, ng, r, l, s, x, y, w, f			// Same as #DEFINE_C, below is same as #DEFINE_V
 #VOWELS			a,e,i,o,u								// Spaces are not necessary, the comma is
-#STRUCTURES		(C)V[C/n]								// May be a comma separated list of multiple structures							
+#STRUCTURES		(C)V[C/n]								// May be a comma separated list of multiple structures
+														// Round braces are optional, either any option or none, square braces are required options, one option must be chosen					
 #DISALLOWED		rl?, ?ml, ?ng?, sr, ?V					// Bans "sr" in any position; "ng" in the middle of a word, "ml" at the end of a word, "rl" and the beginning of a word
 #MAX_SYLLABLES	5										// Max repetitions of structures to use -- this 'syllable' is defined differntly than the entries syllables
 #DUPLICATES		deny									// May be 'allow', 'deny', or 'warn' 						

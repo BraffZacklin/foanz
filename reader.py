@@ -36,11 +36,13 @@ class Reader():
 		if not letter:
 			letter = self.findDirectiveName(line)[-1]
 		phones_list = self.processListDirective(line)
+		updated_list = []
 		for phone in phones_list:
 			if phone in list(self.definitions.keys()):
-				phones_list.remove(phone)
-				phones_list += self.definitions[phone]
-		self.definitions[letter] = phones_list
+				updated_list += self.definitions[phone]
+			else:
+				updated_list += phone
+		self.definitions[letter] = updated_list
 
 	def readDictionaryFile(self):
 		try:
@@ -236,12 +238,10 @@ class Reader():
 
 			if "/" in group:
 				options_list = group.split("/")
-				## 
 				if optional:
 					new_structures = [valid_structures]
 				else:
 					new_structures = []
-				##
 				for option in options_list:
 					new_structures += [entry+option for entry in valid_structures]
 				valid_structures = new_structures
