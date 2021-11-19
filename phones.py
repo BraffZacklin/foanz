@@ -2,7 +2,7 @@ from numpy.random import default_rng
 from random import choice, randrange
 
 class Phones():
-	def __init__(self, definitions, structures, disallowed, max_syllables, required, delimiter):
+	def __init__(self, definitions, structures, disallowed, max_syllables, required, delimiter, debug_valid):
 		self.structures = list(structures)
 		self.definitions = definitions
 		self.disallowed = self.parseDisallowed(disallowed)
@@ -11,6 +11,7 @@ class Phones():
 		self.max_syllables = max_syllables
 		self.syllable_selection = False
 		self.delimiter = delimiter
+		self.debug_valid = debug_valid
 		
 		self.rng = default_rng()
 		print(structures)
@@ -198,18 +199,21 @@ class Phones():
 
 		for rule in self.disallowed["all"]:
 			if rule in string:
-				print(f'{string} violates disallowed rule !{rule}')
+				if debug_valid:
+					print(f'foanz: debug_valid: {string} violates disallowed rule !{rule}')
 				return False
 
 		for rule in self.disallowed["start"]:
 			if string.startswith(rule):
-				print(f'{string} violates disallowed start rule !{rule}')
+				if debug_valid:
+					print(f'foanz: debug_valid: {string} violates disallowed start rule !{rule}')
 				return False
 
 		for rule in self.disallowed["middle"]:
 			index = string.find(rule)
 			if index != -1 and not string.startswith(rule) and not string.endswith(rule):
-				print(f'{string} violates disallowed middle !{rule}')
+				if debug_valid:
+					print(f'foanz: debug_valid: {string} violates disallowed middle !{rule}')
 				return False
 		
 		required_match = False
@@ -218,7 +222,8 @@ class Phones():
 				if string.startswith(rule):
 					required_match = True
 			if not required_match:
-				print(f'{string} violates required start')
+				if debug_valid:
+					print(f'foanz: debug_valid: {string} violates required start')
 				return False
 
 		if end:
@@ -229,13 +234,15 @@ class Phones():
 					if string.endswith(rule):
 						required_match = True
 				if not required_match:
-					print(f'{string} violates required end')
+					if debug_valid:
+						print(f'foanz: debug_valid: {string} violates required end')
 					return False
 
 			for rule in self.disallowed["end"]:
 				index = string.find(rule)
 				if index != -1 and string.endswith(rule):
-					print(f'{string} violates end rule !{rule}')
+					if debug_valid:
+						print(f'foanz: debug_valid: {string} violates end rule !{rule}')
 					return False
 
 		return True

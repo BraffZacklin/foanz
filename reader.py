@@ -13,10 +13,11 @@ class Reader():
 		self.wordbank = []
 		self.delimiter = "."
 		self.definitions = {"C": [], "V": []}
+		self.debug_valid = True
 		self.readDictionaryFile()
 
 	def returnDirectives(self):
-		return self.definitions, self.structures, self.disallowed, self.max_syllables, self.required, self.delimiter
+		return self.definitions, self.structures, self.disallowed, self.max_syllables, self.required, self.delimiter, self.debug_valid
 
 	def removeComments(self, string):
 		if "//" in string:
@@ -66,6 +67,8 @@ class Reader():
 								self.duplicates = line.replace(self.findDirectiveName(line), "").strip().lower()
 								if self.duplicates not in ["allow", "deny", "warn"]:
 									raise ValueError
+							elif "DEBUG_VALID" in line:
+								self.debug_valid = True
 							else:
 								raise ValueError
 						except ValueError as e:

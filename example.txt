@@ -9,6 +9,7 @@
 #DELIMITER		. 										// '.' is default
 #DEFINE_X		a, b, c 								// These may be used in structures
 #REQUIRED		C?										// Forces all words to start with consonants
+#DEBUG_VALID											// Boolean; if present words that don't pass validity checks will prompt a message to the user
 
 // These are entries
 1: This word will be one syllable
