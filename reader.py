@@ -228,11 +228,22 @@ class Reader():
 			elif "(" in group or ")" in group:
 				raise Exception(f"foanz: malformed structures directive entry {structure}")
 
+			if "[" in group and "]" in group:
+				group = group.replace("[", "")
+				group = group.replace("]", "")
+			elif "[" in group or "]" in group:
+				raise Exception(f'foanz: malformed structures in directive entry {structure}')
+
 			if "/" in group:
 				options_list = group.split("/")
-				new_structures = []
+				## 
+				if optional:
+					new_structures = [valid_structures]
+				else:
+					new_structures = []
+				##
 				for option in options_list:
-					new_structures += [entry+option for entry in valid_structures] + valid_structures
+					new_structures += [entry+option for entry in valid_structures]
 				valid_structures = new_structures
 			else:
 				if optional:
@@ -250,10 +261,10 @@ class Reader():
 		group_hit = False
 		group_start = 0
 		for index, char in enumerate(structure):
-			if char == "(":
+			if char == "(" or char == "[":
 				group_hit = True
 				group_start = index
-			elif char == ")":
+			elif char == ")" or char == "]":
 				group_hit = False
 				structure_list.append(structure[group_start:index+1])
 			elif char.isspace():
